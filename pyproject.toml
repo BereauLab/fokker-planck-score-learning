@@ -13,6 +13,7 @@ dependencies = [
     "jax>=0.6.2",
     "jax-dataloader>=0.1.3",
     "jaxtyping>=0.2.36",
+    "matplotlib>=3.10.3",
     "optax>=0.2.5",
     "tqdm>=4.67.1",
 ]
