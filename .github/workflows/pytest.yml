@@ -21,10 +21,10 @@ jobs:
           uv add tox-gh --dev
       - name: Setup tox test suite
         run: |
-          tox -vv --notest
+          uv run tox -vv --notest
       - name: Run test suite
         run: |
-          tox --skip-pkg-install
+          uv run tox --skip-pkg-install
       # - name: Upload coverage reports to Codecov
       #   uses: codecov/codecov-action@v5.4.0
       #   with:
