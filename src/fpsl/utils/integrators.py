@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Callable
 
 import jax
 import numpy as np
 from beartype import beartype
+from beartype.typing import Callable
 from jax import numpy as jnp
 from jaxtyping import ArrayLike, Float
 
