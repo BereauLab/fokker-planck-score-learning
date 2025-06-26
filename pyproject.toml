@@ -47,9 +47,11 @@ ignore = ["F722"]
 # Allow fix for all enabled rules (when `--fix`) is provided.
 fixable = ["ALL"]
 unfixable = []
+preview = true
 
 [tool.ruff.format]
 quote-style = "single"
+preview = true
 
 [dependency-groups]
 dev = [
@@ -77,6 +79,6 @@ commands = [["pytest"]]
 description = "Check code against coding style standards"
 dependency_groups = ["dev"]
 commands = [
-    ["ruff", "check", "--preview"],
-    ["ruff", "format", "--preview", "--check"],
+    ["ruff", "check"],
+    ["ruff", "format", "--check"],
 ]
