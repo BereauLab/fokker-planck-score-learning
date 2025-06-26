@@ -56,8 +56,27 @@ dev = [
     "pre-commit>=4.2.0",
     "pytest>=8.4.1",
     "ruff>=0.12.0",
+    "tox>=4.27.0",
+    "tox-uv>=1.26.1",
 ]
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["E402", "F401"]
 "**/{tests,docs}/*" = ["E402"]
+
+[tool.tox]
+requires = ["tox"]
+envlist = ["py310", "py311", "py312", "py313", "lint"]
+
+[tool.tox.env_run_base]
+description = "Run test under {base_python}"
+dependency_groups = ["dev"]
+commands = [["pytest"]]
+
+[tool.tox.env.lint]
+description = "Check code against coding style standards"
+dependency_groups = ["dev"]
+commands = [
+    ["ruff", "check", "--preview"],
+    ["ruff", "format", "--preview", "--check"],
+]
