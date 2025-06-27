@@ -1,3 +1,33 @@
+r"""
+This module provides a collection of one-dimensional, periodic potential energy
+functions. Each function is JIT-compiled for efficiency and runtime type-checked
+using beartype.
+
+Each function accepts an array-like input `x` of arbitrary shape and returns
+a scalar or array of potential values corresponding to each element of `x`.
+
+Defined functions:
+
+- w_potential_1d(x):
+    Periodic double-well potential
+    $\phi(x) = [2\cos(2\pi x) + 1]\,\cos(2\pi x) - 0.628279.$
+
+- toy_membrane_potential_1d(x):
+    Toy membrane potential
+    $\phi(x) = -\tfrac12\Bigl(\tfrac{(\cos(4\pi x)-1)^4}{4} + \cos(2\pi x)\Bigr) + 0.862700.$
+
+- toy_membrane2_potential_1d(x):
+    Parameterized periodic potential based on MD data
+    $\phi(x) = \phi_0 + \sum_{i=1}^N \alpha_i\,\cos(2\pi i x),
+    \quad \phi_0 = 0.77830946.$
+
+- toy_membrane3_potential_1d(x):
+    Alternative MD-based series potential
+    $\phi(x) = \phi_0 + \sum_{i=1}^N \alpha_i\,\cos(2\pi i x),
+    \quad \phi_0 = 0.26733318.$
+
+"""
+
 import jax.numpy as jnp
 from beartype import beartype
 from jax import jit
