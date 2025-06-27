@@ -1,0 +1,133 @@
+site_name: "fpsl"
+site_description: "Fokker-Planck Score Learning"
+site_url: "https://beraulab.github.io/fokker-planck-score-learning"
+repo_url: "https://github.com/BereauLab/fokker-planck-score-learning"
+edit_uri: "blob/main/docs/"
+repo_name: "bereaulab/fokker-planck-score-learning"
+site_dir: "site"
+copyright: Copyright &copy; 2025 Daniel Nagel
+watch: [src/fpsl]
+
+nav:
+- Home:
+  - Overview: index.md
+  - Changelog: changelog.md
+  - License: license.md
+- Tutorials:
+  - Getting Started: tutorials/index.md
+  - Theoretical Background: tutorials/theory.md
+  - Syntetic Data: tutorials/fpsl.ipynb
+- FAQ: faq.md
+- Code Reference: reference/
+- Development:
+  - Contributing: contributing.md
+  - Maintenance: maintenance.md
+- Bereau Lab: https://www.tristanbereau.com/
+
+theme:
+  name: material
+  favicon: logo.png
+  logo_slate_mode: logo.svg
+  logo_default_mode: logo.svg
+  custom_dir: docs/overrides
+  features:
+  - content.code.annotate
+  - navigation.tabs
+  - navigation.top
+  font:
+    text: Source Sans Pro
+    headline: Playfair Display
+    code: Source Code Pro
+  palette:
+  - media: "(prefers-color-scheme: light)"
+    scheme: default
+    primary: white
+    toggle:
+      icon: material/weather-sunny
+      name: Switch to dark mode
+  - media: "(prefers-color-scheme: dark)"
+    scheme: slate
+    primary: black
+    toggle:
+      icon: material/weather-night
+      name: Switch to light mode
+
+markdown_extensions:
+  # Python Markdown
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+
+  # Python Markdown Extensions
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets:
+      check_paths: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+plugins:
+- section-index
+- search
+- gen-files:
+    scripts:
+    - docs/gen_ref_nav.py
+- literate-nav:
+    nav_file: SUMMARY.md
+- mkdocs-jupyter:
+    include: ["*.ipynb"]
+    execute: true
+    include_source: true
+    allow_errors: false
+    ignore_h1_titles: true
+- mkdocstrings:
+    handlers:
+      python:
+        paths: [src]
+        import:
+        - https://numpy.org/doc/stable/objects.inv
+        options:
+          members_order: "source"
+          docstring_style: "numpy"
+          docstring_section_style: "list"
+          merge_init_into_class: true
+          filters: ["!^_"]
+
+extra_css:
+  - css/extra.css
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+extra:
+  social:
+  - icon: fontawesome/solid/globe
+    link: https://www.tristanbereau.com
+  - icon: fontawesome/brands/github
+    link: https://github.com/BerauLab
+  - icon: fontawesome/brands/x-twitter
+    link: https://x.com/tristanbereau
