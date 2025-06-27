@@ -7,6 +7,26 @@ authors = [
     { name = "braniii" }
 ]
 requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+keywords = [
+    "fokker-planck",
+    "score-learning",
+    "free-energy estimation",
+    "jax",
+    "machine-learning",
+    "diffusion model",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Topic :: Software Development :: Build Tools",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+]
 dependencies = [
     "beartype>=0.21.0",
     "flax>=0.10.6",
@@ -17,6 +37,12 @@ dependencies = [
     "optax>=0.2.5",
     "tqdm>=4.67.1",
 ]
+
+[project.urls]
+Documentation = "https://BereauLab.github.io/fokker-planck-score-learning"
+Repository = "https://github.com/BereauLab/fokker-planck-score-learning"
+Issues = "https://github.com/BereauLab/fokker-planck-score-learning/issues"
+Changelog = "https://BereauLab.github.io/fokker-planck-score-learning/changelog"
 
 [project.optional-dependencies]
 cuda = [
