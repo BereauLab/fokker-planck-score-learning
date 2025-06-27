@@ -4,11 +4,11 @@ handle data on a bounded interval via component replication.
 
 Classes
 -------
-- GMM
+GMM
     Defines a mixture of N Gaussians with shared scalar standard deviation.
     Offers methods to compute the probability density function (PDF) and its natural
     logarithm over input samples.
-- PeriodicGMM
+PeriodicGMM
     Inherits from GMM and adds support for periodic domains [0, bound]. It replicates
     mixture components across multiple copies of the domain to evaluate densities that
     respect periodic boundary conditions.
@@ -32,7 +32,7 @@ class GMM:
 
     Parameters
     ----------
-    means : NDArray
+    means : jnp.ndarray
         The means of the Gaussians.
     std : float
         A scalar representing the standard deviation of the Gaussians.
@@ -52,7 +52,7 @@ class GMM:
 
         Parameters
         ----------
-        X : NDArray
+        X : jnp.ndarray
             The input data.
 
         Returns
@@ -76,12 +76,12 @@ class GMM:
 
         Parameters
         ----------
-        X : NDArray
+        X : jnp.ndarray
             The input data.
 
         Returns
         -------
-        float
+        jnp.ndarray
             The natural logarithm of the PDF value.
 
         """
@@ -95,9 +95,9 @@ class PeriodicGMM(GMM, DefaultDataClass):
 
     Parameters
     ----------
-    means : NDArray
+    means : jnp.ndarray
         The means of the Gaussians.
-    std : Union[NDArray, int]
+    std : Union[jnp.ndarray, int]
         A scalar representing the standard deviation of the Gaussians.
     bound : float, default=1.0
         The data is periodic on [0, bound].
@@ -130,12 +130,12 @@ class PeriodicGMM(GMM, DefaultDataClass):
 
         Parameters
         ----------
-        X : NDArray
+        X : jnp.ndarray
             The input data.
 
         Returns
         -------
-        NDarray
+        jnp.ndarray
             The PDF values.
 
         """
