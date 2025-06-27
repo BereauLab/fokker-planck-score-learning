@@ -36,6 +36,7 @@ dependencies = [
     "matplotlib>=3.10.3",
     "optax>=0.2.5",
     "tqdm>=4.67.1",
+    "wandb>=0.20.1",
 ]
 
 [project.urls]
@@ -88,12 +89,14 @@ dev = [
     "tox-uv>=1.26.1",
 ]
 docs = [
+    "jupyter>=1.1.1",
     "mkdocs-gen-files>=0.5.0",
     "mkdocs-jupyter>=0.25.1",
     "mkdocs-literate-nav>=0.6.2",
     "mkdocs-material>=9.6.14",
     "mkdocs-section-index>=0.3.10",
     "mkdocstrings-python>=1.16.12",
+    "prettypyplot>=0.11.0",
 ]
 
 [tool.ruff.lint.per-file-ignores]
