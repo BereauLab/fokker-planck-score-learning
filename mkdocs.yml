@@ -108,6 +108,9 @@ plugins:
         paths: [src]
         import:
         - https://numpy.org/doc/stable/objects.inv
+        - https://flax-linen.readthedocs.io/en/latest/objects.inv
+        - https://docs.jax.dev/en/latest/objects.inv
+        - https://docs.kidger.site/jaxtyping/objects.inv
         options:
           members_order: "source"
           docstring_style: "numpy"
