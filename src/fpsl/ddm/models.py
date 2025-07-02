@@ -25,7 +25,6 @@ from fpsl.ddm.forceschedule import (
 )
 from fpsl.utils.baseclass import DefaultDataClass
 from fpsl.utils.typing import JaxKey
-from fpsl.datasets.datasets import DataSet
 
 # enable NaN debugging
 jax.config.update('jax_debug_nans', True)
@@ -179,11 +178,6 @@ class DDM(
             self._energy,
             argnums=1,
         )(params, x, t, y)
-        # jax.debug.print(
-        #     'energy: {energy} negative_score: {negative_score}',
-        #     energy=energy,
-        #     negative_score=negative_score,
-        # )
 
         return -negative_score, energy
 
@@ -192,44 +186,6 @@ class DDM(
         return ScorePeriodicMLP(
             self.mlp_network,
             fourier_features_stop=self.fourier_features,
-        )
-
-    def _normalizing_constant(
-        self,
-        params: optax.Params,
-        key: JaxKey,
-        n_samples: int,
-        t: float,
-    ) -> Float[ArrayLike, ' n_features']:
-        r"""Normalizing constant using the entropy-based IFT."""
-        key, _ = jax.random.split(key)
-        x = self.sample(key, n_samples, t)
-
-        def body_fn(x, t):
-            return jnp.exp(
-                -self._energy_eq(params, x, t) / self.sigma(t),
-            )
-
-        t = jnp.full((len(x), 1), t)
-        return jnp.log(
-            jnp.mean(
-                jax.vmap(body_fn)(x, t),
-            ),
-        )
-
-    def normalized_energy(
-        self,
-        x: Float[ArrayLike, 'n_samples n_features'],
-        t: float,
-        key: JaxKey,
-        n_samples: int = int(1e5),
-    ) -> Float[ArrayLike, 'n_samples n_features']:
-        r"""Normalized energy using the entropy-based IFT."""
-        return self.energy(x, t) - self._normalizing_constant(
-            self.params,
-            key,
-            n_samples,
-            t,
         )
 
     def _create_loss_fn(self):
@@ -258,7 +214,12 @@ class DDM(
 
             dt_energy = jax.vmap(
                 jax.grad(
-                    lambda x, t: -self._energy_eq(params, x, t) / self.sigma(t).mean(),
+                    lambda x, t: -self._energy_eq(
+                        params,
+                        x,
+                        t,
+                    )
+                    / self.sigma(t).mean(),
                     argnums=1,
                 )
             )(x_t, t)
@@ -299,7 +260,6 @@ class DDM(
 
     def _get_config(
         self,
-        dataset: DataSet,
         lrs: Float[ArrayLike, '2'],
         key: JaxKey,
         n_epochs: int,
@@ -307,7 +267,6 @@ class DDM(
         y: None | Float[ArrayLike, ' n_features'] = None,
     ) -> dict:
         return {
-            'dataset': dataset.__class__.__name__,
             'learning_rates': lrs,
             'key': key,
             'n_epochs': n_epochs,
@@ -327,19 +286,6 @@ class DDM(
             'box_size': self.box_size,
         }
 
-    def _mae_energy(
-        self,
-        dataset: DataSet,
-    ) -> Float[ArrayLike, '']:
-        e_pred = self.energy(dataset.x.reshape(-1, 1), t=0.0)
-        pot_vectorized = jnp.vectorize(
-            lambda x: dataset.potential(jnp.array([x]), 0.0),
-        )
-        e_ref = pot_vectorized((dataset.x - 0.5) * self.box_size)
-        return jnp.mean(
-            jnp.abs((e_pred - e_pred.mean()) - (e_ref - e_ref.mean())),
-        )
-
     def train(
         self,
         X: Float[ArrayLike, 'n_samples n_features'],
@@ -347,7 +293,6 @@ class DDM(
         key: None | JaxKey = None,
         n_epochs: None | int = None,
         y: None | Float[ArrayLike, ' n_features'] = None,
-        dataset: None | DataSet = None,
         project: str = 'entropy-prod-diffusion',
         wandb_kwargs: dict = {},
     ):
@@ -370,7 +315,6 @@ class DDM(
             wandb.init(
                 project=project,
                 config=self._get_config(
-                    dataset=dataset,
                     lrs=lrs,
                     key=key,
                     n_epochs=n_epochs,
@@ -381,11 +325,11 @@ class DDM(
             )
 
         # main logic
-        loss_and_mae_hist = self._train(X, lrs, key, n_epochs, y, dataset)
+        loss_hist = self._train(X, lrs, key, n_epochs, y)
 
         if self.wandb_log:
             wandb.finish()
-        return loss_and_mae_hist
+        return loss_hist
 
     def _train(
         self,
@@ -394,7 +338,6 @@ class DDM(
         key: JaxKey,
         n_epochs: int,
         y: None | Float[ArrayLike, ' n_features'],
-        dataset: None | DataSet = None,
     ):
         self.params: optax.Params = self.score_model.init(
             key,
@@ -402,14 +345,6 @@ class DDM(
             x=jnp.ones(self.dim),
         )
         n_batches = len(X) // self.batch_size
-        # schedule = optax.schedules.warmup_exponential_decay_schedule(
-        #    init_value=lr,
-        #    peak_value=jnp.sqrt(lr),
-        #    end_value=lr,
-        #    decay_rate=np.sqrt(lr),
-        #    warmup_steps=self.warmup_steps * n_batches,
-        #    transition_steps=(n_epochs - self.warmup_steps) * n_batches,
-        # )
         schedule = optax.schedules.warmup_cosine_decay_schedule(
             warmup_steps=self.warmup_steps * n_batches,
             init_value=np.min(lrs),
@@ -417,10 +352,6 @@ class DDM(
             decay_steps=n_epochs * n_batches,
             end_value=np.min(lrs),
         )
-        # optim = optax.chain(
-        #    optax.clip_by_global_norm(1.0),
-        #    optax.adamw(learning_rate=schedule),
-        # )
         optim = optax.adamw(learning_rate=schedule)
         opt_state: optax.OptState = optim.init(self.params)
 
@@ -429,7 +360,6 @@ class DDM(
         ds = jdl.ArrayDataset(X) if y is None else jdl.ArrayDataset(X, y)
 
         loss_hist = np.zeros(n_epochs)
-        mae_hist = np.zeros(n_epochs)
         for idx in (pbar := tqdm(range(n_epochs), leave=not self.wandb_log)):
             train_batches = jdl.DataLoader(
                 ds,
@@ -451,28 +381,13 @@ class DDM(
             loss_hist[idx] = total_loss
             loss_min = loss_hist[: idx + 1].min()
 
-            if dataset is not None:
-                total_mae = self._mae_energy(dataset=dataset)
-                mae_hist[idx] = total_mae
-                mae_min = mae_hist[: idx + 1].min()
-                pbar.set_description(
-                    f'loss={total_loss:.4g}/{loss_min:.4g} mse={total_mae:.1e}/{mae_min:.1e}',
-                )
-            else:
-                pbar.set_description(
-                    f'loss={total_loss:.4g}/{loss_min:.4g}',
-                )
+            pbar.set_description(
+                f'loss={total_loss:.4g}/{loss_min:.4g}',
+            )
             if self.wandb_log:
-                # Log the plot
+                # Log the training loss
                 wandb.log(
-                    {
-                        'Loss': loss_hist[idx],
-                    }
-                    if dataset is None
-                    else {
-                        'Loss': loss_hist[idx],
-                        'MAE Energy': mae_hist[idx],
-                    },
+                    {'Loss': loss_hist[idx]},
                     step=idx + 1,
                 )
 
@@ -493,9 +408,7 @@ class DDM(
                 step=idx + 1,
             )
 
-        if dataset is None:
-            return loss_hist
-        return loss_hist, mae_hist
+        return loss_hist
 
     def sample(
         self,
@@ -559,7 +472,6 @@ class DrivenDDM(LinearForceSchedule, DDM):
 
     def _get_config(
         self,
-        dataset: DataSet,
         lrs: Float[ArrayLike, '2'],
         key: JaxKey,
         n_epochs: int,
@@ -569,7 +481,6 @@ class DrivenDDM(LinearForceSchedule, DDM):
     ) -> dict:
         return (
             super()._get_config(
-                dataset=dataset,
                 lrs=lrs,
                 key=key,
                 n_epochs=n_epochs,
@@ -662,7 +573,6 @@ class DrivenDDM(LinearForceSchedule, DDM):
         lrs: Float[ArrayLike, '2'],
         key: None | JaxKey = None,
         n_epochs: None | int = None,
-        dataset: None | DataSet = None,
         project: str = 'entropy-prod-diffusion',
         wandb_kwargs: dict = {},
     ):
@@ -672,7 +582,6 @@ class DrivenDDM(LinearForceSchedule, DDM):
             lrs=lrs,
             key=key,
             n_epochs=n_epochs,
-            dataset=dataset,
             project=project,
             wandb_kwargs=wandb_kwargs,
         )
