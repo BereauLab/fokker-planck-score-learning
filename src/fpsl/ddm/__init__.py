@@ -1,1 +1,1 @@
-from .models import DrivenDDM, DrivenSymmetricDDM
+from .models import DrivenDDM
