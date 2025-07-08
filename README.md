@@ -1,6 +1,6 @@
 <div align="center">
   <img
-    src="https://raw.githubusercontent.com/BereauLab/fokker-planck-score-learning/refs/heads/main/docs/logo.svg" width="400"
+    src="https://raw.githubusercontent.com/BereauLab/fokker-planck-score-learning/refs/heads/main/docs/logo.svg" width="200"
   />
 
   <p>
