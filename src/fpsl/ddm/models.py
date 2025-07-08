@@ -302,6 +302,8 @@ class DDM(
         key: None | JaxKey = None,
         n_epochs: None | int = None,
         y: None | Float[ArrayLike, ' n_features'] = None,
+        X_val: None | Float[ArrayLike, 'n_val n_features'] = None,
+        y_val: None | Float[ArrayLike, ' n_features'] = None,
         project: str = 'entropy-prod-diffusion',
         wandb_kwargs: dict = {},
     ):
@@ -334,7 +336,7 @@ class DDM(
             )
 
         # main logic
-        loss_hist = self._train(X, lrs, key, n_epochs, y)
+        loss_hist = self._train(X, lrs, key, n_epochs, y, X_val, y_val)
 
         if self.wandb_log:
             wandb.finish()
@@ -347,6 +349,8 @@ class DDM(
         key: JaxKey,
         n_epochs: int,
         y: None | Float[ArrayLike, ' n_features'],
+        X_val: None | Float[ArrayLike, 'n_val n_features'],
+        y_val: None | Float[ArrayLike, ' n_features'],
     ):
         self.params: optax.Params = self.score_model.init(
             key,
@@ -365,10 +369,12 @@ class DDM(
         opt_state: optax.OptState = optim.init(self.params)
 
         update_step = self._create_update_step(optim)
+        loss_fn = self._create_loss_fn()
 
         ds = jdl.ArrayDataset(X) if y is None else jdl.ArrayDataset(X, y)
 
         loss_hist = np.zeros(n_epochs)
+        val_loss_hist = np.zeros(n_epochs) if X_val is not None else None
         for idx in (pbar := tqdm(range(n_epochs), leave=not self.wandb_log)):
             train_batches = jdl.DataLoader(
                 ds,
@@ -388,6 +394,10 @@ class DDM(
                 )
                 total_loss += loss * self.batch_size / X.shape[0]
             loss_hist[idx] = total_loss
+            if X_val is not None:
+                # compute validation loss once per epoch
+                val_loss = loss_fn()(params=self.params, key=key, X=X_val, y=y_val)
+                val_loss_hist[idx] = float(val_loss)
             loss_min = loss_hist[: idx + 1].min()
 
             pbar.set_description(
@@ -417,7 +427,20 @@ class DDM(
                 step=idx + 1,
             )
 
-        return loss_hist
+        # return both train and val loss history
+        return {'train_loss': loss_hist, 'val_loss': val_loss_hist}
+
+    def evaluate(
+        self,
+        X: Float[ArrayLike, 'n_samples n_features'],
+        y: None | Float[ArrayLike, ' n_features'] = None,
+        key: None | JaxKey = None,
+    ) -> float:
+        """Compute the same loss used in training on held-out data."""
+        if key is None:
+            key = self.key
+        loss_fn = self._create_loss_fn()
+        return float(loss_fn(params=self.params, key=key, X=X, y=y))
 
     def sample(
         self,
@@ -582,6 +605,8 @@ class DrivenDDM(LinearForceSchedule, DDM):
         lrs: Float[ArrayLike, '2'],
         key: None | JaxKey = None,
         n_epochs: None | int = None,
+        X_val: None | Float[ArrayLike, 'n_val n_features'] = None,
+        y_val: None | Float[ArrayLike, ' n_features'] = None,
         project: str = 'entropy-prod-diffusion',
         wandb_kwargs: dict = {},
     ):
@@ -591,6 +616,8 @@ class DrivenDDM(LinearForceSchedule, DDM):
             lrs=lrs,
             key=key,
             n_epochs=n_epochs,
+            X_val=X_val,
+            y_val=y_val,
             project=project,
             wandb_kwargs=wandb_kwargs,
         )
