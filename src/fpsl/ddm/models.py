@@ -47,7 +47,7 @@ class DDM(
     wandb_log: int = False
     gamma_energy_regulariztion: float = 1e-5
     fourier_features: int = 1
-    warmup_steps: int = 50
+    warmup_steps: int = 5
     box_size: float = 1.0
     symmetric: bool = False
 
@@ -184,16 +184,10 @@ class DDM(
 
     @cached_property
     def score_model(self) -> float:
-        return (
-            ScoreSymmetricPeriodicMLP(
-                self.mlp_network,
-                fourier_features_stop=self.fourier_features,
-            )
-            if self.symmetric
-            else ScorePeriodicMLP(
-                self.mlp_network,
-                fourier_features_stop=self.fourier_features,
-            )
+        mlp = ScoreSymmetricPeriodicMLP if self.symmetric else ScorePeriodicMLP
+        return mlp(
+            self.mlp_network,
+            fourier_features_stop=self.fourier_features,
         )
 
     def _create_loss_fn(self):
@@ -489,7 +483,7 @@ class DDM(
 class DrivenDDM(LinearForceSchedule, DDM):
     """EB-based denoising diffusion model for driven periodic data on [0, 1]."""
 
-    pbc_bins: int = 20
+    pbc_bins: int = 0
     diffusion: Callable[[Float[ArrayLike, ' n_features']], Float[ArrayLike, '']] = (
         lambda x: 1.0
     )

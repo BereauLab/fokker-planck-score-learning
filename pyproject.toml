@@ -30,7 +30,7 @@ classifiers = [
 dependencies = [
     "beartype>=0.21.0",
     "flax>=0.10.6",
-    "jax>=0.6.2",
+    "jax[cuda,cuda12]==0.6.0",
     "jax-dataloader>=0.1.3",
     "jaxtyping>=0.2.36",
     "matplotlib>=3.10.3",
@@ -47,10 +47,10 @@ Changelog = "https://BereauLab.github.io/fokker-planck-score-learning/changelog"
 
 [project.optional-dependencies]
 cuda = [
-    "jax[cuda12]>=0.6.2",
+    "jax[cuda12]>=0.6.0",
 ]
 tpu = [
-    "jax[tpu]>=0.6.2",
+    "jax[tpu]>=0.6.0",
 ]
 
 [tool.uv]
