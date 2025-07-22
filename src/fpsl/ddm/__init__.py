@@ -3,7 +3,7 @@ This submodule provides a suite of the denoising diffusion models.
 """
 
 __all__ = [
-    'DrivenDDM',
+    'FPSL',
 ]
 
-from .models import DrivenDDM
+from .models import FPSL

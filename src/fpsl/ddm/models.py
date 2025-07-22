@@ -31,7 +31,7 @@ jax.config.update('jax_debug_nans', True)
 
 
 @dataclass(kw_only=True)
-class DrivenDDM(
+class FPSL(
     LinearForceSchedule,
     LinearPriorSchedule,
     UniformPrior,
