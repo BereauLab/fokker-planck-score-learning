@@ -31,7 +31,8 @@ jax.config.update('jax_debug_nans', True)
 
 
 @dataclass(kw_only=True)
-class DDM(
+class DrivenDDM(
+    LinearForceSchedule,
     LinearPriorSchedule,
     UniformPrior,
     ExponetialVarianceNoiseSchedule,
@@ -53,6 +54,7 @@ class DDM(
     diffusion: Callable[[Float[ArrayLike, ' n_features']], Float[ArrayLike, '']] = (
         lambda x: 1.0
     )
+    pbc_bins: int = 0
 
     def _estimate_avg_diffusion(self) -> float:
         xs = jnp.linspace(0, 1, 1000)
@@ -124,19 +126,45 @@ class DDM(
         params: optax.Params,
         x: Float[ArrayLike, ' n_features'],
         t: float,
-        y: None | Float[ArrayLike, ' n_features'] = None,
+        y: Float[ArrayLike, ' n_features'],
     ) -> Float[ArrayLike, '']:
         r"""Energy, aka. negative log-likelihood.
 
         $$
         \begin{aligned}
         \nabla_x E_\theta &= - s_\theta\\
-        \Rightarrow E_\theta &= -\ln p + C\\
+        \Rightarrow -\sigma_t E_\theta &= -\ln p + C\\
         \end{aligned}
         $$
         """
+        work = y * x
+
+        if self.pbc_bins == 0:
+            pbc_correction = 0
+        else:
+            xs = jnp.linspace(x.sum(), x.sum() + 1, self.pbc_bins)
+            dx = xs[1] - xs[0]
+            energies = jax.vmap(
+                self._energy_eq,
+                in_axes=(None, 0, 0),
+            )(params, xs.reshape(-1, 1), jnp.full((len(xs), 1), t))
+            U_eff = -energies / self.sigma(t) - self.alpha_force(t) * y * xs
+            # mimic trapezoid weights
+            w = jnp.ones_like(xs)
+            w = w.at[0].set(0.5).at[-1].set(0.5)
+            pbc_correction = jax.scipy.special.logsumexp(
+                U_eff,
+                b=w,
+                axis=0,
+            ) + jnp.log(dx)
+
+        # use _energy_eq here
         return jnp.sum(
-            (1 - self.alpha(t)) * self.score_model.apply(params, x, t),
+            (1 - self.alpha(t)) * self.score_model.apply(params, x, t)
+            - self.sigma(t)
+            * (
+                self._ln_diffusion_t(x, t) - self.alpha_force(t) * work - pbc_correction
+            ),
         )
 
     def _energy_eq(
@@ -168,13 +196,17 @@ class DDM(
         if isinstance(t, float) and self.sigma(t) == 0:
             return np.zeros_like(x)
 
-        energy_times_minus_sigma = jax.vmap(
-            self._energy_eq,
-            in_axes=(None, 0, 0),
-        )(self.params, x, jnp.full((len(x), 1), t)) if y is None else jax.vmap(
-            self._energy,
-            in_axes=(None, 0, 0, 0),
-        )(self.params, x, jnp.full((len(x), 1), t), jnp.full((len(x), 1), y))  # fmt: skip
+        energy_times_minus_sigma = (
+            jax.vmap(
+                self._energy_eq,
+                in_axes=(None, 0, 0),
+            )(self.params, x, jnp.full((len(x), 1), t))
+            if y is None
+            else jax.vmap(
+                self._energy,
+                in_axes=(None, 0, 0, 0),
+            )(self.params, x, jnp.full((len(x), 1), t), jnp.full((len(x), 1), y))
+        )
 
         return -energy_times_minus_sigma / self.sigma(t) + jax.vmap(
             self._ln_diffusion_t,
@@ -185,7 +217,7 @@ class DDM(
         params: optax.Params,
         x: Float[ArrayLike, ' n_features'],
         t: Float[ArrayLike, ''],
-        y: None | Float[ArrayLike, ' n_features'] = None,
+        y: Float[ArrayLike, ' n_features'],
     ) -> Float[ArrayLike, '']:
         r"""Diffusion score and energy.
 
@@ -223,17 +255,10 @@ class DDM(
             eps = jax.random.normal(key2, X.shape)
             x_t = self.prior_x_t(x=X, t=t, eps=eps)
 
-            score_times_minus_sigma_pred = (
-                jax.vmap(
-                    self._score,
-                    in_axes=(None, 0, 0),
-                )(params, x_t, t)
-                if y is None
-                else jax.vmap(
-                    self._score,
-                    in_axes=(None, 0, 0, 0),
-                )(params, x_t, t, y)
-            )
+            score_times_minus_sigma_pred = jax.vmap(
+                self._score,
+                in_axes=(None, 0, 0, 0),
+            )(params, x_t, t, y)
 
             dt_energy = jax.vmap(
                 jax.grad(
@@ -308,15 +333,18 @@ class DDM(
             'fourier_features': self.fourier_features,
             'box_size': self.box_size,
             'symmetric': self.symmetric,
+            'force_schedule': self._force_schedule,
+            'forces': jnp.unique(y).tolist(),
+            'pbc_bins': self.pbc_bins,
         }
 
     def train(
         self,
         X: Float[ArrayLike, 'n_samples n_features'],
+        y: Float[ArrayLike, ' n_features'],
         lrs: Float[ArrayLike, '2'],
         key: None | JaxKey = None,
         n_epochs: None | int = None,
-        y: None | Float[ArrayLike, ' n_features'] = None,
         X_val: None | Float[ArrayLike, 'n_val n_features'] = None,
         y_val: None | Float[ArrayLike, ' n_features'] = None,
         project: str = 'entropy-prod-diffusion',
@@ -351,7 +379,15 @@ class DDM(
             )
 
         # main logic
-        loss_hist = self._train(X, lrs, key, n_epochs, y, X_val, y_val)
+        loss_hist = self._train(
+            X=X,
+            lrs=lrs,
+            key=key,
+            n_epochs=n_epochs,
+            y=y,
+            X_val=X_val,
+            y_val=y_val,
+        )
 
         if self.wandb_log:
             wandb.finish()
@@ -360,10 +396,10 @@ class DDM(
     def _train(
         self,
         X: Float[ArrayLike, 'n_samples n_features'],
+        y: Float[ArrayLike, ' n_features'],
         lrs: Float[ArrayLike, '2'],
         key: JaxKey,
         n_epochs: int,
-        y: None | Float[ArrayLike, ' n_features'],
         X_val: None | Float[ArrayLike, 'n_val n_features'],
         y_val: None | Float[ArrayLike, ' n_features'],
     ):
@@ -386,7 +422,7 @@ class DDM(
         update_step = self._create_update_step(optim)
         loss_fn = self._create_loss_fn()
 
-        ds = jdl.ArrayDataset(X) if y is None else jdl.ArrayDataset(X, y)
+        ds = jdl.ArrayDataset(X, y)
 
         loss_hist = np.zeros(n_epochs)
         val_loss_hist = np.zeros(n_epochs) if X_val is not None else None
@@ -498,122 +534,3 @@ class DDM(
             (x_init, key),
         )
         return final_x
-
-
-@dataclass(kw_only=True)
-class DrivenDDM(LinearForceSchedule, DDM):
-    """EB-based denoising diffusion model for driven periodic data on [0, 1]."""
-
-    pbc_bins: int = 0
-
-    def _get_config(
-        self,
-        lrs: Float[ArrayLike, '2'],
-        key: JaxKey,
-        n_epochs: int,
-        X: Float[ArrayLike, 'n_samples n_features'],
-        y: Float[ArrayLike, ' n_features'],
-        wandb_kwargs: dict = {},
-    ) -> dict:
-        return (
-            super()._get_config(
-                lrs=lrs,
-                key=key,
-                n_epochs=n_epochs,
-                X=X,
-                y=y,
-            )
-            | {
-                'force_schedule': self._force_schedule,
-                'forces': jnp.unique(y).tolist(),
-                'pbc_bins': self.pbc_bins,
-            }
-            | wandb_kwargs
-        )
-
-    def _energy(
-        self,
-        params: optax.Params,
-        x: Float[ArrayLike, ' n_features'],
-        t: float,
-        y: Float[ArrayLike, ' n_features'],
-    ) -> Float[ArrayLike, '']:
-        r"""Energy, aka. negative log-likelihood.
-
-        $$
-        \begin{aligned}
-        \nabla_x E_\theta &= - s_\theta\\
-        \Rightarrow -\sigma_t E_\theta &= -\ln p + C\\
-        \end{aligned}
-        $$
-        """
-        work = y * x
-
-        if self.pbc_bins == 0:
-            pbc_correction = 0
-        else:
-            xs = jnp.linspace(x.sum(), x.sum() + 1, self.pbc_bins)
-            dx = xs[1] - xs[0]
-            energies = jax.vmap(
-                self._energy_eq,
-                in_axes=(None, 0, 0),
-            )(params, xs.reshape(-1, 1), jnp.full((len(xs), 1), t))
-            U_eff = -energies / self.sigma(t) - self.alpha_force(t) * y * xs
-            # mimic trapezoid weights
-            w = jnp.ones_like(xs)
-            w = w.at[0].set(0.5).at[-1].set(0.5)
-            pbc_correction = jax.scipy.special.logsumexp(
-                U_eff,
-                b=w,
-                axis=0,
-            ) + jnp.log(dx)
-
-        return jnp.sum(
-            (1 - self.alpha(t)) * self.score_model.apply(params, x, t)
-            - self.sigma(t)
-            * (
-                self._ln_diffusion_t(x, t) - self.alpha_force(t) * work - pbc_correction
-            ),
-        )
-
-    def _score_and_energy(
-        self,
-        params: optax.Params,
-        x: Float[ArrayLike, 'n_samples n_features'],
-        t: float,
-        y: Float[ArrayLike, ' n_features'],
-    ) -> Float[ArrayLike, 'n_samples n_features']:
-        r"""Diffusion score and energy.
-
-        $$
-        \begin{aligned}
-        s_\theta &= \nabla_x \ln p_t + f\\
-        E_\theta &= -\ln p + C
-        \end{aligned}
-        $$
-        """
-        return super()._score_and_energy(params, x, t, y)
-
-    def train(
-        self,
-        X: Float[ArrayLike, 'n_samples n_features'],
-        y: Float[ArrayLike, ' n_features'],
-        lrs: Float[ArrayLike, '2'],
-        key: None | JaxKey = None,
-        n_epochs: None | int = None,
-        X_val: None | Float[ArrayLike, 'n_val n_features'] = None,
-        y_val: None | Float[ArrayLike, ' n_features'] = None,
-        project: str = 'entropy-prod-diffusion',
-        wandb_kwargs: dict = {},
-    ):
-        return super().train(
-            X=X,
-            y=y,
-            lrs=lrs,
-            key=key,
-            n_epochs=n_epochs,
-            X_val=X_val,
-            y_val=y_val,
-            project=project,
-            wandb_kwargs=wandb_kwargs,
-        )
