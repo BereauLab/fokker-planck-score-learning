@@ -16,7 +16,7 @@ nav:
 - Tutorials:
   - Getting Started: tutorials/index.md
   - Theoretical Background: tutorials/theory.md
-  - Syntetic Data: tutorials/fpsl.ipynb
+  - Example: tutorials/fpsl.ipynb
 - FAQ: faq.md
 - Code Reference: reference/
 - Development:
