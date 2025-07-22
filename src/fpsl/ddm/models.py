@@ -50,6 +50,25 @@ class DDM(
     warmup_steps: int = 5
     box_size: float = 1.0
     symmetric: bool = False
+    diffusion: Callable[[Float[ArrayLike, ' n_features']], Float[ArrayLike, '']] = (
+        lambda x: 1.0
+    )
+
+    def _estimate_avg_diffusion(self) -> float:
+        xs = jnp.linspace(0, 1, 1000)
+        return jax.vmap(self.diffusion)(xs).mean()
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        self._avg_diffusion = self._estimate_avg_diffusion()
+
+    def _diffusion_t(self, x, t):
+        return (
+            (1 - self.alpha(t)) * self.diffusion(x) / self._avg_diffusion
+        ) + self.alpha(t)
+
+    def _ln_diffusion_t(self, x, t):
+        return jnp.log(self._diffusion_t(x, t)).sum()
 
     def score(
         self,
@@ -157,7 +176,9 @@ class DDM(
             in_axes=(None, 0, 0, 0),
         )(self.params, x, jnp.full((len(x), 1), t), jnp.full((len(x), 1), y))  # fmt: skip
 
-        return -energy_times_minus_sigma / self.sigma(t)
+        return -energy_times_minus_sigma / self.sigma(t) + jax.vmap(
+            self._ln_diffusion_t,
+        )(x, jnp.full((len(x), 1), t))
 
     def _score_and_energy(
         self,
@@ -484,17 +505,6 @@ class DrivenDDM(LinearForceSchedule, DDM):
     """EB-based denoising diffusion model for driven periodic data on [0, 1]."""
 
     pbc_bins: int = 0
-    diffusion: Callable[[Float[ArrayLike, ' n_features']], Float[ArrayLike, '']] = (
-        lambda x: 1.0
-    )
-
-    def _estimate_avg_diffusion(self) -> float:
-        xs = jnp.linspace(0, 1, 1000)
-        return jax.vmap(self.diffusion)(xs).mean()
-
-    def __post_init__(self) -> None:
-        super().__post_init__()
-        self._avg_diffusion = self._estimate_avg_diffusion()
 
     def _get_config(
         self,
@@ -520,14 +530,6 @@ class DrivenDDM(LinearForceSchedule, DDM):
             }
             | wandb_kwargs
         )
-
-    def _diffusion_t(self, x, t):
-        return (
-            (1 - self.alpha(t)) * self.diffusion(x) / self._avg_diffusion
-        ) + self.alpha(t)
-
-    def _ln_diffusion_t(self, x, t):
-        return jnp.log(self._diffusion_t(x, t)).sum()
 
     def _energy(
         self,
@@ -615,13 +617,3 @@ class DrivenDDM(LinearForceSchedule, DDM):
             project=project,
             wandb_kwargs=wandb_kwargs,
         )
-
-    def energy(
-        self,
-        x: Float[ArrayLike, 'n_samples n_features'],
-        t: float,
-        y: None | Float[ArrayLike, ''] = None,
-    ) -> Float[ArrayLike, ' n_samples']:
-        return super().energy(x, t, y) + jax.vmap(
-            self._ln_diffusion_t,
-        )(x, jnp.full((len(x), 1), t))
