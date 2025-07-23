@@ -5,23 +5,24 @@ experiments. Each dataset class encapsulates a specific analytic potential funct
 supporting machinery to generate samples, compute energies, and (where applicable)
 apply an external biasing force.
 
-Classes:
-    WPotential1D
-        A symmetric double-well (W-shaped) potential in one dimension.
-    BiasedForceWPotential1D
-        The WPotential1D with an added constant biasing force term.
-    ToyMembranePotential1D
-        A simple membrane-like potential featuring a central barrier and flanking wells.
-    BiasedForceToyMembranePotential1D
-        The ToyMembranePotential1D augmented with an external biasing force.
-    ToyMembrane2Potential1D
-        An extended membrane potential with two barriers and three wells.
-    BiasedForceToyMembrane2Potential1D
-        The ToyMembrane2Potential1D with an additional biasing force.
-    ToyMembrane3Potential1D
-        A higher-order membrane potential featuring three barriers and four wells.
-    BiasedForceToyMembrane3Potential1D
-        The ToyMembrane3Potential1D augmented with an external biasing force.
+The following [DataSet][fpsl.datasets.DataSet] classes are included:
+
+- [**WPotential1D**][fpsl.datasets.WPotential1D]
+    A symmetric double-well (W-shaped) potential in one dimension.
+- [**BiasedForceWPotential1D**][fpsl.datasets.BiasedForceWPotential1D]
+    The WPotential1D with an added constant biasing force term.
+- [**ToyMembranePotential1D**][fpsl.datasets.ToyMembranePotential1D]
+    A simple membrane-like potential featuring a central barrier and flanking wells.
+- [**BiasedForceToyMembranePotential1D**][fpsl.datasets.BiasedForceToyMembranePotential1D]
+    The ToyMembranePotential1D augmented with an external biasing force.
+- [**ToyMembrane2Potential1D**][fpsl.datasets.ToyMembrane2Potential1D]
+    An extended membrane potential with two barriers and three wells.
+- [**BiasedForceToyMembrane2Potential1D**][fpsl.datasets.BiasedForceToyMembrane2Potential1D]
+    The ToyMembrane2Potential1D with an additional biasing force.
+- [**ToyMembrane3Potential1D**][fpsl.datasets.ToyMembrane3Potential1D]
+    A higher-order membrane potential featuring three barriers and four wells.
+- [**BiasedForceToyMembrane3Potential1D**][fpsl.datasets.BiasedForceToyMembrane3Potential1D]
+    The ToyMembrane3Potential1D augmented with an external biasing force.
 
 All classes expose a consistent interface for:
     • Sampling data points from the potential's Boltzmann distribution.

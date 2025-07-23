@@ -6,25 +6,25 @@ integrators.  Supported potentials include the W-potential and several
 “toy membrane” variants.  Users can obtain sample trajectories or plot
 the potential energy profile.
 
-Classes
--------
-DataSet
+The following datasets are available:
+
+- [**DataSet**][fpsl.datasets.datasets.DataSet]
     Abstract base defining the dataset interface.
-WPotential1D
+- [**WPotential1D**][fpsl.datasets.datasets.WPotential1D]
     Dataset for the 1D W-potential.
-BiasedForceWPotential1D
+- [**BiasedForceWPotential1D**][fpsl.datasets.datasets.BiasedForceWPotential1D]
     WPotential1D with an additional bias force in sampling.
-ToyMembranePotential1D
+- [**ToyMembranePotential1D**][fpsl.datasets.datasets.ToyMembranePotential1D]
     Dataset for a 1D toy membrane potential.
-BiasedForceToyMembranePotential1D
+- [**BiasedForceToyMembranePotential1D**][fpsl.datasets.datasets.BiasedForceToyMembranePotential1D]
     Biased version of ToyMembranePotential1D.
-ToyMembrane2Potential1D
+- [**ToyMembrane2Potential1D**][fpsl.datasets.datasets.ToyMembrane2Potential1D]
     Dataset for a second toy membrane potential.
-BiasedForceToyMembrane2Potential1D
+- [**BiasedForceToyMembrane2Potential1D**][fpsl.datasets.datasets.BiasedForceToyMembrane2Potential1D]
     Biased version of ToyMembrane2Potential1D.
-ToyMembrane3Potential1D
+- [**ToyMembrane3Potential1D**][fpsl.datasets.datasets.ToyMembrane3Potential1D]
     Dataset for a third toy membrane potential.
-BiasedForceToyMembrane3Potential1D
+- [**BiasedForceToyMembrane3Potential1D**][fpsl.datasets.datasets.BiasedForceToyMembrane3Potential1D]
     Biased version of ToyMembrane3Potential1D.
 """
 
