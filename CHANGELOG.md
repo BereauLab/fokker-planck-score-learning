@@ -15,8 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added Features and Improvements 🙌:
-- Improved documentation
-- Added a tutorial with an example
+- Added a tutorial with a brief theoretical recap, and an example application
+- Improved documentation, with submodule docstrings
 
 ### Other changes:
 - Cleaned up some code
