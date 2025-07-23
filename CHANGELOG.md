@@ -14,11 +14,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ## [Unreleased]
+### Added Features and Improvements 🙌:
+- Improved documentation
+- Added a tutorial with an example
+
+### Other changes:
+- Cleaned up some code
+- Add dependabot
 
 
-## [1.0.0] - 2025-06-28
+## [0.1.0] - 2025-06-28
 - Initial release 🎉
 
 
-[Unreleased]: https://github.com/moldyn/msmhelper/compare/v1.0.0...main
-[1.0.0]: https://github.com/moldyn/msmhelper/tree/v1.0.0
+[Unreleased]: https://github.com/bereaulab/fokker-planck-score-learning/compare/v0.1.0...main
+[0.1.0]: https://github.com/bereaulab/fokker-planck-score-learning/tree/v0.1.0
