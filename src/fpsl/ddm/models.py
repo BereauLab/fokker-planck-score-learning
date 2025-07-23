@@ -119,7 +119,7 @@ class FPSL(
     Examples
     --------
     >>> import jax.random as jr
-    >>> from fpsl.ddm.models import FPSL
+    >>> from fpsl import FPSL
     >>>
     >>> # Create model
     >>> key = jr.PRNGKey(42)
@@ -127,7 +127,7 @@ class FPSL(
     ...     mlp_network=(64, 64, 64),
     ...     key=key,
     ...     n_epochs=50,
-    ...     batch_size=64
+    ...     batch_size=64,
     ... )
     >>>
     >>> # Train on data
