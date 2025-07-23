@@ -16,6 +16,7 @@ jobs:
         uses: astral-sh/setup-uv@v6
         with:
           python-version: ${{ matrix.python-version }}
+          enable-cache: true
       - name: Install tox-gh
         run: |
           uv add tox-gh --dev
