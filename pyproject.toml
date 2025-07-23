@@ -37,6 +37,7 @@ dependencies = [
     "optax>=0.2.5",
     "tqdm>=4.67.1",
     "wandb>=0.20.1",
+    "mdanalysis>=2.9.0",
 ]
 
 [project.urls]

@@ -675,6 +675,7 @@ dependencies = [
     { name = "jax-dataloader" },
     { name = "jaxtyping" },
     { name = "matplotlib" },
+    { name = "mdanalysis" },
     { name = "optax" },
     { name = "tqdm" },
     { name = "wandb" },
@@ -717,6 +718,7 @@ requires-dist = [
     { name = "jax-dataloader", specifier = ">=0.1.3" },
     { name = "jaxtyping", specifier = ">=0.2.36" },
     { name = "matplotlib", specifier = ">=3.10.3" },
+    { name = "mdanalysis", specifier = ">=2.9.0" },
     { name = "optax", specifier = ">=0.2.5" },
     { name = "tqdm", specifier = ">=4.67.1" },
     { name = "wandb", specifier = ">=0.20.1" },
@@ -794,6 +796,22 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/c0/89/37df0b71473153574a5cdef8f242de422a0f5d26d7a9e231e6f169b4ad14/gitpython-3.1.44.tar.gz", hash = "sha256:c87e30b26253bf5418b01b0660f818967f3c503193838337fe5e573331249269", size = 214196, upload-time = "2025-01-02T07:32:43.59Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/1d/9a/4114a9057db2f1462d5c8f8390ab7383925fe1ac012eaa42402ad65c2963/GitPython-3.1.44-py3-none-any.whl", hash = "sha256:9e0e10cda9bed1ee64bc9a6de50e7e38a9c9943241cd7f585f6df3ed28011110", size = 207599, upload-time = "2025-01-02T07:32:40.731Z" },
+]
+
+[[package]]
+name = "griddataformats"
+version = "1.0.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "mrcfile" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11' or (extra == 'extra-4-fpsl-cuda' and extra == 'extra-4-fpsl-tpu')" },
+    { name = "numpy", version = "2.3.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11' or (extra == 'extra-4-fpsl-cuda' and extra == 'extra-4-fpsl-tpu')" },
+    { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11' or (extra == 'extra-4-fpsl-cuda' and extra == 'extra-4-fpsl-tpu')" },
+    { name = "scipy", version = "1.16.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11' or (extra == 'extra-4-fpsl-cuda' and extra == 'extra-4-fpsl-tpu')" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/da/8b/e273fb4b3bb3d6c31b6387b34c602d96c407f535f2c58b17512f8b5a2746/GridDataFormats-1.0.2.tar.gz", hash = "sha256:b93cf7f36fce33dbc428026f26dba560d5c7ba2387caca495bad920f90094502", size = 2158614, upload-time = "2023-10-21T21:47:43.113Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/89/ab/9cae972ca177f7c64017f4b76f3780c832da52737b95c3e39ed0701af7a7/GridDataFormats-1.0.2-py3-none-any.whl", hash = "sha256:4562bb2da9a064a8e6640e5fb853e204c8f32f6403651703f6b0ef58a009054c", size = 2140075, upload-time = "2023-10-21T21:47:40.967Z" },
 ]
 
 [[package]]
@@ -1167,6 +1185,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/df/bf/f7da0350254c0ed7c72f3e33cef02e048281fec7ecec5f032d4aac52226b/jinja2-3.1.6.tar.gz", hash = "sha256:0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d", size = 245115, upload-time = "2025-03-05T20:05:02.478Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/62/a1/3d680cbfd5f4b8f15abc1d571870c5fc3e594bb582bc3b64ea099db13e56/jinja2-3.1.6-py3-none-any.whl", hash = "sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67", size = 134899, upload-time = "2025-03-05T20:05:00.369Z" },
+]
+
+[[package]]
+name = "joblib"
+version = "1.5.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/dc/fe/0f5a938c54105553436dbff7a61dc4fed4b1b2c98852f8833beaf4d5968f/joblib-1.5.1.tar.gz", hash = "sha256:f4f86e351f39fe3d0d32a9f2c3d8af1ee4cec285aafcb27003dda5205576b444", size = 330475, upload-time = "2025-05-23T12:04:37.097Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7d/4f/1195bbac8e0c2acc5f740661631d8d750dc38d4a32b23ee5df3cde6f4e0d/joblib-1.5.1-py3-none-any.whl", hash = "sha256:4719a31f054c7d766948dcd83e9613686b27114f190f717cec7eaa2084f8a74a", size = 307746, upload-time = "2025-05-23T12:04:35.124Z" },
 ]
 
 [[package]]
@@ -1685,6 +1712,54 @@ wheels = [
 ]
 
 [[package]]
+name = "mda-xdrlib"
+version = "0.2.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/bc/4d/9c6a179e91b793fb9e5475b9876499855ff6c20097650871f15976fc95a0/mda_xdrlib-0.2.0.tar.gz", hash = "sha256:f26f7158a83c32b96d15b530fce2cbc1190c4b7024e41faa4ab3e3db74e272af", size = 35142, upload-time = "2023-08-28T21:01:16.183Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/4f/4b/5fe3a00833a9f9775b3c237624a6212798167278ffe10fe0de04f58612d0/mda_xdrlib-0.2.0-py3-none-any.whl", hash = "sha256:0d1757b339f5db2d017a89ddaae06a82cd7a2cce26b8063df9f52b64e933fb47", size = 14587, upload-time = "2023-08-28T21:01:14.693Z" },
+]
+
+[[package]]
+name = "mdanalysis"
+version = "2.9.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "filelock" },
+    { name = "griddataformats" },
+    { name = "joblib" },
+    { name = "matplotlib" },
+    { name = "mda-xdrlib" },
+    { name = "mmtf-python" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11' or (extra == 'extra-4-fpsl-cuda' and extra == 'extra-4-fpsl-tpu')" },
+    { name = "numpy", version = "2.3.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11' or (extra == 'extra-4-fpsl-cuda' and extra == 'extra-4-fpsl-tpu')" },
+    { name = "packaging" },
+    { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11' or (extra == 'extra-4-fpsl-cuda' and extra == 'extra-4-fpsl-tpu')" },
+    { name = "scipy", version = "1.16.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11' or (extra == 'extra-4-fpsl-cuda' and extra == 'extra-4-fpsl-tpu')" },
+    { name = "threadpoolctl" },
+    { name = "tqdm" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/9e/0b/ad2805c66246cbc9b7dca5a086316da0687135b5c6786da7b75ea9e1622d/mdanalysis-2.9.0.tar.gz", hash = "sha256:fe7a4ac33e7a5c1001d954667d7e630aeb26cab6f8917fdbac6ffad903999497", size = 5156874, upload-time = "2025-03-11T21:57:43.647Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/36/b5/4e50bf4bc63dbf51ea3f6371ab8f27ef6e49f2a295d0a873e0093e16a71d/mdanalysis-2.9.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:1c39ca99fc822bc4aed686f9b636bc8af489d9cbf1f7d7def65894a0afeaec8a", size = 6560145, upload-time = "2025-03-11T21:57:07.984Z" },
+    { url = "https://files.pythonhosted.org/packages/8f/f6/5e6ee36b67d55749f6c8c60a5eceb019f31c4a077e1fa45e807e2896e665/mdanalysis-2.9.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:88d0653d7f9ef5ce65bd63a5ce76284dbaa002262cc731a1cc2e2eef82ba8d97", size = 6466769, upload-time = "2025-03-11T21:57:11.156Z" },
+    { url = "https://files.pythonhosted.org/packages/2c/7d/e8fa40165c3e84f179cc1176b43c0177de1507fb5f518e6c30ba9d1c7569/mdanalysis-2.9.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:0d6e5d62eb8c728549543ae4feb8a024494698cc7914d31169808a4b8f3efe3c", size = 12461219, upload-time = "2025-03-11T21:57:15.65Z" },
+    { url = "https://files.pythonhosted.org/packages/4a/98/c9a6b2d8fb0abefe3f512518fecb5497de106ced1ce9cc62b6ba40702926/mdanalysis-2.9.0-cp310-cp310-win_amd64.whl", hash = "sha256:85369de6296491d39b97023bdee599fe5f07ec678d60efb5390b5aefc576783c", size = 6388960, upload-time = "2025-03-11T21:57:17.707Z" },
+    { url = "https://files.pythonhosted.org/packages/0f/e7/d6847d62dcddb2840c34a2a5b1c11719a6555960870bd30009bd28785af3/mdanalysis-2.9.0-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:68f4f710f7c0ced95630cb5a6e5a1e61038f207106a963879cfecaebb4e6ca29", size = 6561484, upload-time = "2025-03-11T21:57:19.781Z" },
+    { url = "https://files.pythonhosted.org/packages/b2/f9/22d172baaa9f7835e3bff8cc47556994e847706f9674b3d885017da670c4/mdanalysis-2.9.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:c5ad6fa37ca6e14f403375d95fcb86be43bc1067ce401fe30105deac6eaa3e51", size = 6465691, upload-time = "2025-03-11T21:57:21.942Z" },
+    { url = "https://files.pythonhosted.org/packages/79/0a/4a188b1027da4335f9fda8ed4a57e16bfdc8c0bcd24a3538b88cd32bfbb1/mdanalysis-2.9.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:13951ccb5c03e3c79ee5bbd4670fcece7060622161989b5eb2c389321f0df218", size = 12989491, upload-time = "2025-03-11T21:57:23.657Z" },
+    { url = "https://files.pythonhosted.org/packages/36/9e/686eb5e6b8d251ae1659a9e1bca01271eaeef3309cc3c17f54f6254d87b7/mdanalysis-2.9.0-cp311-cp311-win_amd64.whl", hash = "sha256:ca3e1e1b26683e8f5efd96d9b3cb84da1ee463136017113ee860d651224e7afb", size = 6391158, upload-time = "2025-03-11T21:57:25.752Z" },
+    { url = "https://files.pythonhosted.org/packages/49/bd/6c15e33c08e8a15d9526d3662317bee73623340571cae32be3ee3c9bcc6b/mdanalysis-2.9.0-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:18f5207a7b0098e2837ddef8eb7cd2a8db70aa1e9f11e014189e5d923914ce21", size = 6581583, upload-time = "2025-03-11T21:57:27.47Z" },
+    { url = "https://files.pythonhosted.org/packages/38/a1/75f01707e41c30191908d134ea4917d3d6bdd3a525b59283e8970b57969a/mdanalysis-2.9.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:8465e9a3b45ce6c188bdba472a27b80f1144b0c7127b8c4ed0156033bebfb5b6", size = 6471558, upload-time = "2025-03-11T21:57:29.45Z" },
+    { url = "https://files.pythonhosted.org/packages/a2/4f/31c87a03b0ae25fd9315704167d565a942cacca446fcbaf76a669c6e85d2/mdanalysis-2.9.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:486714919f08fe18f98bf80bec404dbc4face94803c1775d88340a148503683d", size = 12886888, upload-time = "2025-03-11T21:57:31.173Z" },
+    { url = "https://files.pythonhosted.org/packages/0b/a7/043d4f83baef204b943aa95c2f4defc3f70a86dd17969394b6702b3c361d/mdanalysis-2.9.0-cp312-cp312-win_amd64.whl", hash = "sha256:7a2ea6388a4af7af5734d5d248d2c127d1548f465efa2eff6aa5d9ab9b674112", size = 6394518, upload-time = "2025-03-11T21:57:33.431Z" },
+    { url = "https://files.pythonhosted.org/packages/b6/4c/a8ab61891fdd0fe49528e202d14ac6b3f4bb1adc11dff5f00b0509f4c38e/mdanalysis-2.9.0-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:164cf71ced0c202683c53a3c5eb66d5d88cb14cbe52f0c5eb3c80a5dbb79a4bd", size = 6567745, upload-time = "2025-03-11T21:57:35.477Z" },
+    { url = "https://files.pythonhosted.org/packages/f6/9c/7fe12c2da25071a61e05bc17615ea9d8bd2069ec6c5f5268899133c411f8/mdanalysis-2.9.0-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:4d663627d104b6a57d618afac60a2e86fc7452080b921c8b1b399aa77ed16c63", size = 6459909, upload-time = "2025-03-11T21:57:37.176Z" },
+    { url = "https://files.pythonhosted.org/packages/f1/37/2860b0c101b6037023c0b6decb8893f382d765dbe969a139f933d6551eb3/mdanalysis-2.9.0-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e4cfa6fb8e9911556461e6b31adc14fb8a2274ffe39c9171b9e5df52e08376c9", size = 12829282, upload-time = "2025-03-11T21:57:39.454Z" },
+    { url = "https://files.pythonhosted.org/packages/40/21/a968e3a3bd65d5b285c2c0ea2b8044f82c3e576bd4d28a2b7cb04b07abba/mdanalysis-2.9.0-cp313-cp313-win_amd64.whl", hash = "sha256:af06687aa5431d0495ffa2f5f86f9d9572d167daa2bb188396ef7a83ef7caad3", size = 6392427, upload-time = "2025-03-11T21:57:41.936Z" },
+]
+
+[[package]]
 name = "mdit-py-plugins"
 version = "0.4.2"
 source = { registry = "https://pypi.org/simple" }
@@ -1923,6 +1998,31 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/52/38/703169100fdde27957f061d4d0ea3e00525775a09acaccf7e655d9609d55/ml_dtypes-0.5.1-cp313-cp313t-macosx_10_13_universal2.whl", hash = "sha256:05f23447a1c20ddf4dc7c2c661aa9ed93fcb2658f1017c204d1e758714dc28a8", size = 693043, upload-time = "2025-01-07T03:34:38.457Z" },
     { url = "https://files.pythonhosted.org/packages/28/ff/4e234c9c23e0d456f5da5a326c103bf890c746d93351524d987e41f438b3/ml_dtypes-0.5.1-cp313-cp313t-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:1b7fbe5571fdf28fd3aaab3ef4aafc847de9ebf263be959958c1ca58ec8eadf5", size = 4903946, upload-time = "2025-01-07T03:34:40.236Z" },
     { url = "https://files.pythonhosted.org/packages/b7/45/c1a1ccfdd02bc4173ca0f4a2d327683a27df85797b885eb1da1ca325b85c/ml_dtypes-0.5.1-cp313-cp313t-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:d13755f8e8445b3870114e5b6240facaa7cb0c3361e54beba3e07fa912a6e12b", size = 5052731, upload-time = "2025-01-07T03:34:45.308Z" },
+]
+
+[[package]]
+name = "mmtf-python"
+version = "1.1.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "msgpack" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/d8/0f/f3c132dc9aac9a3f32a0eba7a80f07d14e7624e96f9245eeac5fe48f42cd/mmtf-python-1.1.3.tar.gz", hash = "sha256:12a02fe1b7131f0a2b8ce45b46f1e0cdd28b9818fe4499554c26884987ea0c32", size = 46032, upload-time = "2022-07-06T03:06:25.993Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3c/f1/efea3da858043ed9c078f507ab744b6d00933c7bc8a75a24821937600178/mmtf_python-1.1.3-py2.py3-none-any.whl", hash = "sha256:502031c509a8a6d73e042781abbd88b84c1afffe65097eb0c1b70f329ffd1e6e", size = 25252, upload-time = "2022-07-06T03:06:23.344Z" },
+]
+
+[[package]]
+name = "mrcfile"
+version = "1.5.4"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11' or (extra == 'extra-4-fpsl-cuda' and extra == 'extra-4-fpsl-tpu')" },
+    { name = "numpy", version = "2.3.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11' or (extra == 'extra-4-fpsl-cuda' and extra == 'extra-4-fpsl-tpu')" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/56/22/8834f44c2455291e241fb2543c2d5d4f0fe58fd63ad0f42e86570f0b1161/mrcfile-1.5.4.tar.gz", hash = "sha256:8fa9eb2e237d87d99b301c61bf02854dd85a451db25eefcbe142c09b36d8d601", size = 52052606, upload-time = "2025-01-22T12:36:10.924Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6f/cb/3f4ee8233f30c7926f1ed4885ff32b79ec7ce3210370f43e1cb2b385bed6/mrcfile-1.5.4-py2.py3-none-any.whl", hash = "sha256:195370a13db5ce19600499f9bdf90fd9888979bf39de19a17c19024436c6f4c2", size = 45012, upload-time = "2025-01-22T12:02:38.502Z" },
 ]
 
 [[package]]
@@ -3547,6 +3647,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/8a/11/965c6fd8e5cc254f1fe142d547387da17a8ebfd75a3455f637c663fb38a0/terminado-0.18.1.tar.gz", hash = "sha256:de09f2c4b85de4765f7714688fff57d3e75bad1f909b589fde880460c753fd2e", size = 32701, upload-time = "2024-03-12T14:34:39.026Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/6a/9e/2064975477fdc887e47ad42157e214526dcad8f317a948dee17e1659a62f/terminado-0.18.1-py3-none-any.whl", hash = "sha256:a4468e1b37bb318f8a86514f65814e1afc977cf29b3992a4500d9dd305dcceb0", size = 14154, upload-time = "2024-03-12T14:34:36.569Z" },
+]
+
+[[package]]
+name = "threadpoolctl"
+version = "3.6.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/b7/4d/08c89e34946fce2aec4fbb45c9016efd5f4d7f24af8e5d93296e935631d8/threadpoolctl-3.6.0.tar.gz", hash = "sha256:8ab8b4aa3491d812b623328249fab5302a68d2d71745c8a4c719a2fcaba9f44e", size = 21274, upload-time = "2025-03-13T13:49:23.031Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/32/d5/f9a850d79b0851d1d4ef6456097579a9005b31fea68726a4ae5f2d82ddd9/threadpoolctl-3.6.0-py3-none-any.whl", hash = "sha256:43a0b8fd5a2928500110039e43a5eed8480b918967083ea48dc3ab9f13c4a7fb", size = 18638, upload-time = "2025-03-13T13:49:21.846Z" },
 ]
 
 [[package]]
