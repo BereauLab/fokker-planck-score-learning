@@ -120,9 +120,8 @@ commands = [
     ["ruff", "format", "--check"],
 ]
 
-[tool.tox.gh]
-python =
-    3.13 = py313
-    3.12 = lint, py312
-    3.11 = py311
-    3.10 = py10
+[tool.tox.gh.python]
+"3.13" = ["py313"]
+"3.12" = ["lint", "py312"]
+"3.11" = ["py311"]
+"3.10" = ["py310"]
