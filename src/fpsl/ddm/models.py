@@ -581,8 +581,8 @@ class FPSL(
                     n_epochs=n_epochs,
                     X=X,
                     y=y,
-                    wandb_kwargs=wandb_kwargs,
-                ),
+                )
+                | wandb_kwargs,
             )
 
         # main logic
@@ -655,7 +655,8 @@ class FPSL(
             loss_hist[idx] = total_loss
             if X_val is not None:
                 # compute validation loss once per epoch
-                val_loss = loss_fn()(params=self.params, key=key, X=X_val, y=y_val)
+                key, _ = jax.random.split(key)
+                val_loss = loss_fn(params=self.params, key=key, X=X_val, y=y_val)
                 val_loss_hist[idx] = float(val_loss)
             loss_min = loss_hist[: idx + 1].min()
 
