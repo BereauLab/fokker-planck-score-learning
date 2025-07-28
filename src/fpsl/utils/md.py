@@ -1,7 +1,6 @@
 from functools import partial
 
 import jax
-import MDAnalysis as mda
 import mdtraj as md
 import numpy as np
 
@@ -153,76 +152,6 @@ def load_trajs(
         )
 
     return Xs, ys, boxsizes, dt
-
-
-def load_gromacs_trr(
-    trr_file,
-    gro_file,
-    lipid='POPC',
-    molecule='N3',
-    unitless=True,
-):
-    """Load Gromacs trr file and convert to unitless DM.
-
-    Parameters
-    ----------
-    trr_file : str
-        Path to the trr file.
-    gro_file : str
-        Path to the gro file.
-    lipid : str
-        Lipid name. Default is 'POPC'.
-    molecule : str
-        Molecule name. Default is 'N3'.
-    unitless : bool
-        If True, return unitless DM. Default is True.
-
-    Returns
-    -------
-    tuple
-        zs : np.ndarray
-            Scaled trajectory or in [nm].
-        v_zs : np.ndarray
-            Scaled velocities or in [nm/ns].
-        fs : np.ndarray
-            Scaled forces or in kJ/mol/nm.
-        dt : float
-            Time step in ns.
-        boxsize : float
-            Box size in nm.
-    """
-    universe = mda.Universe(gro_file, trr_file)
-    lipid = universe.select_atoms(f'resname {lipid}')
-    molecule = universe.select_atoms(f'resname {molecule}')
-    n_frames = universe.trajectory.n_frames
-
-    ts = np.zeros(n_frames, dtype=float)
-    zs = np.zeros_like(ts)
-    v_zs = np.zeros_like(ts)
-    fs = np.zeros_like(ts)
-    for idx, frame in enumerate(universe.trajectory):
-        ts[idx] = frame.time
-        zs[idx] = (molecule.center(None) - lipid.center(None))[-1] / 10  # in nm
-        v_zs[idx] = molecule.velocities[0, -1] * 1e-4  # in nm/ns
-        fs[idx] = molecule.forces[0, -1] * 10  # in kJ/mol/nm
-
-    # get boxsize
-    boxsize = universe.dimensions[2] / 10  # in nm
-    dt = ts[1] - ts[0] * 1e-3  # in ns
-
-    # shift pbc
-    zs = ((zs + 0.5 * boxsize) % boxsize) - 0.5 * boxsize  # / boxsize
-
-    if unitless:
-        return (
-            zs / boxsize + 0.5,
-            v_zs * dt * boxsize,
-            scale_force(fs, boxsize),
-            ts,
-            boxsize,
-        )
-
-    return zs, v_zs, fs, dt, boxsize
 
 
 def unwrap_traj(traj, boxsize=1):
