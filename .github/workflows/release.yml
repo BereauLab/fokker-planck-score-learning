@@ -1,0 +1,29 @@
+name: Release
+
+on:
+  push:
+    tags:
+      # Publish on any tag starting with a `v`, e.g. v1.2.3
+      - v*
+
+jobs:
+  pypi:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Build package
+        run: |
+          uv build
+      - name: Run test (wheel)
+        run: |
+          uv run --isolated --no-project -p 3.13 --with dist/*.whl tests/pypi_test.py
+      - name: Run test (source distribtution)
+        run: |
+          uv run --isolated --no-project -p 3.13 --with dist/*.tar.gz tests/pypi_test.py
+      - run: uv publish --trusted-publishing always

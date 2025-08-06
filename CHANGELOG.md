@@ -15,12 +15,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added Features and Improvements 🙌:
+- Added CI for automated publishing to PyPi
 - Added a tutorial with a brief theoretical recap, and an example application
 - Improved documentation, with submodule docstrings
 
 ### Other changes:
 - Cleaned up some code
 - Add dependabot
+
+### Bugfix 🐛:
+- Fix using inner product when estimating work
 
 
 ## [0.1.0] - 2025-06-28
