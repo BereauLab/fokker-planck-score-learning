@@ -6,8 +6,8 @@
   <p>
     <a href="https://arxiv.org/abs/2506.15653" alt="arXiv">
       <img src="https://img.shields.io/badge/arXiv-2506.15653-red" /></a>
-    <a href="https://github.com/wemake-services/wemake-python-styleguide" alt="wemake-python-styleguide" >
-        <img src="https://img.shields.io/badge/style-wemake-000000.svg" /></a>
+    <a href="https://github.com/astral-sh/ruff" alt="wemake-python-styleguide" >
+        <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" /></a>
     <a href="https://github.com/BereauLab/fokker-planck-score-learning/actions/workflows/pytest.yml" alt="Pytest" >
         <img src="https://github.com/BereauLab/fokker-planck-score-learning/actions/workflows/pytest.yml/badge.svg?branch=main" /></a>
     <a href="https://pypi.org/project/fpsl" alt="PyPI" >
