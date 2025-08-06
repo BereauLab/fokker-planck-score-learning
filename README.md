@@ -16,7 +16,7 @@
         <img src="https://pepy.tech/badge/fpsl" /></a>
     <a href="https://img.shields.io/pypi/pyversions/fpsl" alt="PyPI - Python Version">
         <img src="https://img.shields.io/pypi/pyversions/fpsl" /></a>
-    <a href="https://github.com/BereauLab/fokker-planck-score-learning/-/blob/main/LICENSE" alt="PyPI - License" >
+    <a href="https://github.com/BereauLab/fokker-planck-score-learning/blob/main/LICENSE" alt="PyPI - License" >
         <img src="https://img.shields.io/pypi/l/fpsl" /></a>
     <a href="https://bereaulab.github.io/fokker-planck-score-learning" alt="Doc" >
         <img src="https://img.shields.io/badge/mkdocs-Documentation-brightgreen" /></a>
