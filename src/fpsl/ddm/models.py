@@ -38,7 +38,7 @@ class FPSL(
     ExponetialVarianceNoiseSchedule,
     DefaultDataClass,
 ):
-    """Fokker-Planck Score Learning (FPSL) model for periodic data.
+    r"""Fokker-Planck Score Learning (FPSL) model for periodic data.
 
     An energy-based denoising diffusion model designed for learning probability
     distributions on periodic domains [0, 1]. The model combines multiple
@@ -265,7 +265,7 @@ class FPSL(
         \end{aligned}
         $$
         """
-        work = y * x
+        work = jnp.sum(y * x)
 
         if self.pbc_bins == 0:
             pbc_correction = 0
