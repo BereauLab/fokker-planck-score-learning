@@ -1,6 +1,6 @@
 [project]
 name = "fpsl"
-version = "0.1.0"
+version = "0.2.0"
 description = "Fokker-Planck Score Learning: Efficient free-energy estimation under periodic boundary conditions"
 readme = "README.md"
 authors = [

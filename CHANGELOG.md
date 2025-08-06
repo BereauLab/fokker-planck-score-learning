@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ## [Unreleased]
+
+
+## [0.2.0] - 2025-08-06
 ### Added Features and Improvements 🙌:
 - Added CI for automated publishing to PyPi
 - Added a tutorial with a brief theoretical recap, and an example application
@@ -31,5 +34,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release 🎉
 
 
-[Unreleased]: https://github.com/bereaulab/fokker-planck-score-learning/compare/v0.1.0...main
+[Unreleased]: https://github.com/bereaulab/fokker-planck-score-learning/compare/v0.2.0...main
+[0.2.0]: https://github.com/bereaulab/fokker-planck-score-learning/compare/v0.1.0...0.2.0
 [0.1.0]: https://github.com/bereaulab/fokker-planck-score-learning/tree/v0.1.0
