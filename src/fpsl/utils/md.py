@@ -102,9 +102,9 @@ def load_trajs(
     ext_forces : list[float]
         List of external forces.
     pullx_basename : str
-        Basename of the pullx files. Should contain {vel} placeholders.
+        Basename of the pullx files. Should contain {force} placeholders.
     gro_basename : str
-        Basename of the gro files. Should contain {vel} placeholders.
+        Basename of the gro files. Should contain {force} placeholders.
     stride : int
         Stride for the trajectory. Default is 1.
     temperature : float
@@ -130,8 +130,8 @@ def load_trajs(
 
     for ext_force in ext_forces:
         # time in ps, traj in nm
-        pullx_file = pullx_basename.format(vel=ext_force)
-        gro_file = gro_basename.format(vel=ext_force)
+        pullx_file = pullx_basename.format(force=ext_force)
+        gro_file = gro_basename.format(force=ext_force)
         Xs_force, _, ys_force, dt, boxsize = load_gromacs_pullx(
             pullx_file=f'{directory}/{pullx_file}',
             gro_file=f'{directory}/{gro_file}',
