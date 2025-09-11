@@ -614,12 +614,20 @@ class FPSL(
             x=jnp.ones(self.dim),
         )
         n_batches = len(X) // self.batch_size
-        schedule = optax.schedules.warmup_cosine_decay_schedule(
-            warmup_steps=self.warmup_steps * n_batches,
-            init_value=np.min(lrs),
-            peak_value=np.max(lrs),
-            decay_steps=n_epochs * n_batches,
-            end_value=np.min(lrs),
+        schedule = (
+            optax.schedules.warmup_cosine_decay_schedule(
+                warmup_steps=self.warmup_steps * n_batches,
+                init_value=np.min(lrs),
+                peak_value=np.max(lrs),
+                decay_steps=n_epochs * n_batches,
+                end_value=np.min(lrs),
+            )
+            if self.warmup_steps > 0
+            else optax.cosine_decay_schedule(
+                init_value=np.max(lrs),
+                decay_steps=n_epochs * n_batches,
+                alpha=np.min(lrs) / np.max(lrs),
+            )
         )
         optim = optax.adamw(learning_rate=schedule)
         opt_state: optax.OptState = optim.init(self.params)
