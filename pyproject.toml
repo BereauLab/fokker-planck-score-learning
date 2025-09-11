@@ -99,7 +99,7 @@ docs = [
     "mkdocs-material>=9.6.14",
     "mkdocs-section-index>=0.3.10",
     "mkdocstrings-python>=1.16.12",
-    "prettypyplot>=0.11.0",
+    "prettypyplot>=0.12.0",
 ]
 
 [tool.ruff.lint.per-file-ignores]

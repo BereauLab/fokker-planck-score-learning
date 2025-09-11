@@ -781,7 +781,7 @@ docs = [
     { name = "mkdocs-material", specifier = ">=9.6.14" },
     { name = "mkdocs-section-index", specifier = ">=0.3.10" },
     { name = "mkdocstrings-python", specifier = ">=1.16.12" },
-    { name = "prettypyplot", specifier = ">=0.11.0" },
+    { name = "prettypyplot", specifier = ">=0.12.0" },
 ]
 
 [[package]]
@@ -2801,7 +2801,7 @@ wheels = [
 
 [[package]]
 name = "prettypyplot"
-version = "0.11.0"
+version = "0.12.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "decorit" },
@@ -2809,9 +2809,9 @@ dependencies = [
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11' or (extra == 'extra-4-fpsl-cuda' and extra == 'extra-4-fpsl-tpu')" },
     { name = "numpy", version = "2.3.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11' or (extra == 'extra-4-fpsl-cuda' and extra == 'extra-4-fpsl-tpu')" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/49/d3/2f527506b11058938535e00cdf31a8a9190ccafad88834d566b0f0a4c75d/prettypyplot-0.11.0.tar.gz", hash = "sha256:54886789899ea9f6eb4d7427fc68042f80bf9679711e9b037c95ea424271e304", size = 43028, upload-time = "2024-05-30T11:41:06.584Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/aa/e2/81426bd4cac2c707aeacc6cbb4df588bc4b33c1394b7be455c0db8e5dd8a/prettypyplot-0.12.0.tar.gz", hash = "sha256:f668cfd9101e6ecb6ee2f6ab25cd5f65180f2a57e0bd63dd70cd6ed66c8edf9e", size = 311683, upload-time = "2025-08-11T21:14:20.884Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9d/6a/f8f6e6204a1d682d479f967ba42ebc8a3635b5e9a4ef10c79f25595ad888/prettypyplot-0.11.0-py3-none-any.whl", hash = "sha256:c14829226b472ea799434a80c65f148536463c065450a0835c990006aa96f5bc", size = 38988, upload-time = "2024-05-30T11:41:01.387Z" },
+    { url = "https://files.pythonhosted.org/packages/a9/14/f0c4379e7e83ec0d13173726bca82f505bf14354a1b712d31987b6dd36c8/prettypyplot-0.12.0-py3-none-any.whl", hash = "sha256:929b5efd8ab0d74dcb7a4fb83302720391c9a436a7dccfc34632dde48de21eb4", size = 40725, upload-time = "2025-08-11T21:14:19.943Z" },
 ]
 
 [[package]]
