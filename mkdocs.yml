@@ -17,6 +17,7 @@ nav:
   - Getting Started: tutorials/index.md
   - Theoretical Background: tutorials/theory.md
   - Example: tutorials/fpsl.ipynb
+  - MD: tutorials/md.ipynb
   - Advanced Topics: tutorials/advanced.ipynb
 - Code Reference: reference/
 - Development:
