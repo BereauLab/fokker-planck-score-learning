@@ -119,7 +119,7 @@ class FPSL(
     Examples
     --------
     >>> import jax.random as jr
-    >>> from fpsl.ddm.models import FPSL
+    >>> from fpsl import FPSL
     >>>
     >>> # Create model
     >>> key = jr.PRNGKey(42)
@@ -127,7 +127,7 @@ class FPSL(
     ...     mlp_network=(64, 64, 64),
     ...     key=key,
     ...     n_epochs=50,
-    ...     batch_size=64
+    ...     batch_size=64,
     ... )
     >>>
     >>> # Train on data
@@ -429,15 +429,12 @@ class FPSL(
                 )
             )(x_t, t)
 
+            # delta = jnp.abs((score_times_minus_sigma_pred - eps) * self.sigma(t))
+            # delta = ((delta - jnp.round(delta)) / self.sigma(t)) ** 2
+            delta = (score_times_minus_sigma_pred - eps) ** 2
+
             return jnp.mean(
-                jnp.min(
-                    jnp.array([
-                        jnp.abs(score_times_minus_sigma_pred - eps) % 1,
-                        jnp.abs(score_times_minus_sigma_pred - eps),
-                    ]),
-                    axis=0,
-                )
-                ** 2,
+                delta,
             ) + self.gamma_energy_regulariztion * (jnp.mean(dt_energy**2))
 
         return loss_fn
@@ -617,12 +614,20 @@ class FPSL(
             x=jnp.ones(self.dim),
         )
         n_batches = len(X) // self.batch_size
-        schedule = optax.schedules.warmup_cosine_decay_schedule(
-            warmup_steps=self.warmup_steps * n_batches,
-            init_value=np.min(lrs),
-            peak_value=np.max(lrs),
-            decay_steps=n_epochs * n_batches,
-            end_value=np.min(lrs),
+        schedule = (
+            optax.schedules.warmup_cosine_decay_schedule(
+                warmup_steps=self.warmup_steps * n_batches,
+                init_value=np.min(lrs),
+                peak_value=np.max(lrs),
+                decay_steps=n_epochs * n_batches,
+                end_value=np.min(lrs),
+            )
+            if self.warmup_steps > 0
+            else optax.cosine_decay_schedule(
+                init_value=np.max(lrs),
+                decay_steps=n_epochs * n_batches,
+                alpha=np.min(lrs) / np.max(lrs),
+            )
         )
         optim = optax.adamw(learning_rate=schedule)
         opt_state: optax.OptState = optim.init(self.params)

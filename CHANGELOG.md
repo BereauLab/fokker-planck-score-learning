@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Other changes:
 - Cleaned up some code
 - Add dependabot
+- Use `cosine_decay_schedule` instead of `warmup_cosine_decay_schedule` if user selects `warmup_steps=0`.
 
 ### Bugfix 🐛:
 - Fix using inner product when estimating work

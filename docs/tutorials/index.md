@@ -30,6 +30,8 @@ The tutorial is structured into the following sections:
     This section provides a theoretical background on the FPSL approach, including the Fokker-Planck equation, score-based generative modeling, and the specific challenges of periodic boundary conditions.
 - [**Interactive Tutorial Notebook:**](fpsl.ipynb)
     This comprehensive Jupyter notebook walks you through the complete FPSL workflow using toy model examples from the main paper. You'll learn how to: Set up and configure FPSL models, work with built-in potential energy datasets, train diffusion models on non-equilibrium data, generate samples and reconstruct free energy profiles, and analyze and visualize results.
+- [**MD Tutorial Notebook:**](md.ipynb)
+    This comprehensive Jupyter notebook walks you through the complete FPSL workflow using MD data from the main paper.
 
 ## Getting Help
 In case you encounter any issues or have questions while using FPSL, there are several resources available to help you:
