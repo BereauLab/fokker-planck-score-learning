@@ -26,6 +26,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
     "beartype>=0.21.0",
@@ -113,7 +114,7 @@ docs = [
 
 [tool.tox]
 requires = ["tox"]
-envlist = ["py310", "py311", "py312", "py313", "lint"]
+envlist = ["py310", "py311", "py312", "py313", "py314", "lint"]
 
 [tool.tox.env_run_base]
 description = "Run test under {base_python}"
@@ -129,6 +130,7 @@ commands = [
 ]
 
 [tool.tox.gh.python]
+"3.14" = ["py314"]
 "3.13" = ["py313"]
 "3.12" = ["lint", "py312"]
 "3.11" = ["py311"]

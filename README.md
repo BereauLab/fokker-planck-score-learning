@@ -44,7 +44,7 @@ We kindly ask you to cite this article in case you use this software package for
 ## Features
 - TBA
 - [Documentation](https://bereaulab.github.io/fokker-planck-score-learning) including tutorials
-- Supports Python 3.10-3.13
+- Supports Python 3.10-3.14
 
 ## Getting started
 ### Installation
