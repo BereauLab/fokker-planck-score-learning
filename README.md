@@ -31,7 +31,7 @@
 
 # Fokker-Planck Score Learning: Efficient Free-Energy Estimation Under Periodic Boundary Conditions
 
-This package contains a proof-of-concept implementation of the Fokker-Planck score learning approach.
+This package provides a proof-of-concept implementation of the Fokker-Planck score learning approach.
 
 This package is published in:
 > **Fokker-Planck Score Learning: Efficient Free-Energy Estimation Under Periodic Boundary Conditions**,  
@@ -39,7 +39,7 @@ This package is published in:
 > *arXiv* **2025**,  
 > doi: [10.48550/arXiv.2506.15653](https://doi.org/10.48550/arXiv.2506.15653)
 
-We kindly ask you to cite this article in case you use this software package for published works.
+We kindly ask you to cite this article if you use this software package in published work.
 
 ## Features
 - TBA
@@ -52,7 +52,7 @@ The package is called `fpsl` and will be soon available via [PyPI](https://pypi.
 ```bash
 python3 -m pip install fpsl
 ```
-For now, you can install it from github. Download the repo and setup an env with with `fpsl` installed with `uv`. If you do not have `uv` you can get it [here](https://docs.astral.sh/uv/).
+For now, you can install it from github. Download the repo and setup an env with `fpsl` installed with `uv`. If you do not have `uv` you can get it [here](https://docs.astral.sh/uv/).
 ```
 uv sync --extra cuda  # if you have an Nvidia GPU
 ```
