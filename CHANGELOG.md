@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added Features and Improvements 🙌:
 - Added submodule to work with MD data `fpsl.utils.md` together new with tutorial 🎉
 - Added submodule with periodic fourier expansion `fpsl.utils.fourier`
+- Add support for py3.14
 
 ### Other changes:
 - Use `cosine_decay_schedule` instead of `warmup_cosine_decay_schedule` if user selects `warmup_steps=0`
