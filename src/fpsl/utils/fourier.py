@@ -2,7 +2,7 @@ import jax
 from jax import numpy as jnp
 
 
-def get_fourier_func(ys, xs, n_order=51):
+def get_fourier_func(ys, xs, n_order=51, even=True, odd=False, idx_offset=10):
     """Fourier expansion of a function.
 
     Parameters
@@ -27,27 +27,34 @@ def get_fourier_func(ys, xs, n_order=51):
             2 * jnp.trapezoid(ys * jnp.sin(2 * jnp.pi * n * xs), x=xs),
         )
 
-    offset = ys[:10].mean()
+    offset = jnp.array([
+        ys[:idx_offset].mean(),
+        ys[-idx_offset:].mean(),
+    ]).mean()
     ys = ys - offset
 
     ns = jnp.arange(1, n_order + 1)
-    alphas, _ = jnp.array([alpha_and_beta_n(n, ys, xs) for n in ns]).T
+    alphas, betas = jnp.array([alpha_and_beta_n(n, ys, xs) for n in ns]).T
     phi_0 = jnp.trapezoid(ys, x=xs) + offset
 
-    def fourier_func(xs, phi_0, alphas):
-        return (
-            jnp.sum(
-                jnp.array([
-                    alpha * jnp.cos(2 * jnp.pi * i * xs)
-                    for i, alpha in enumerate(alphas, 1)
-                ]),
-                axis=0,
-            )
-            + phi_0
+    def fourier_func(xs, phi_0, alphas, betas):
+        f_even = jnp.sum(
+            jnp.array([
+                alpha * jnp.cos(2 * jnp.pi * i * xs)
+                for i, alpha in enumerate(alphas, 1)
+            ]),
+            axis=0,
         )
+        f_odd = jnp.sum(
+            jnp.array([
+                beta * jnp.sin(2 * jnp.pi * i * xs) for i, beta in enumerate(betas, 1)
+            ]),
+            axis=0,
+        )
+        return phi_0 + (f_even if even else 0) + (f_odd if odd else 0)
 
     @jax.jit
     def jitted_fourier_func(x):
-        return fourier_func(x, phi_0, alphas).sum()
+        return fourier_func(x, phi_0, alphas, betas).sum()
 
     return jitted_fourier_func
