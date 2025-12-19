@@ -66,6 +66,49 @@ class ScoreMLP(nn.Module):
         return self.mlp(h).sum(axis=-1)
 
 
+class _BaseScorePeriodicMLP(nn.Module):
+    """Periodic score network with sine/cosine Fourier features.
+
+    Extends `ScoreMLP` by first embedding `x` via Fourier features before
+    concatenating with time.
+
+    Parameters
+    ----------
+    features : Sequence[int]
+        Hidden layer sizes for the underlying MLP.
+    fourier_features_stop : int, optional
+        Maximum frequency (inclusive) for Fourier embeddings. Default is 1.
+    odd : bool, optional
+        If True, include sine components in Fourier features. Default is True.
+    even : bool, optional
+        If True, include cosine components in Fourier features. Default is True.
+
+    Returns
+    -------
+    score : jnp.ndarray
+        Scalar score per example, shape (...,).
+    """
+
+    features: Sequence[int]
+    fourier_features_stop: int = 1
+    odd: bool = True
+    even: bool = True
+
+    def setup(self) -> None:
+        self.mlp = MLP(features=self.features)
+
+    @nn.compact
+    def __call__(self, x: jnp.ndarray, t: jnp.ndarray) -> jnp.ndarray:
+        """Compute periodic score for each (x, t)."""
+        ff = FourierFeatures(
+            stop=self.fourier_features_stop,
+            odd=self.odd,
+            even=self.even,
+        )
+        h = jnp.concatenate((ff(x), t), axis=-1)
+        return self.mlp(h).sum(axis=-1)
+
+
 class ScorePeriodicMLP(nn.Module):
     """Periodic score network with sine/cosine Fourier features.
 
@@ -89,18 +132,16 @@ class ScorePeriodicMLP(nn.Module):
     fourier_features_stop: int = 1
 
     def setup(self) -> None:
-        self.mlp = MLP(features=self.features)
-
-    @nn.compact
-    def __call__(self, x: jnp.ndarray, t: jnp.ndarray) -> jnp.ndarray:
-        """Compute periodic score for each (x, t)."""
-        ff = FourierFeatures(
-            stop=self.fourier_features_stop,
-            odd=True,
+        self.mlp = _BaseScorePeriodicMLP(
+            features=self.features,
+            fourier_features_stop=self.fourier_features_stop,
+            odd=False,
             even=True,
         )
-        h = jnp.concatenate((ff(x), t), axis=-1)
-        return self.mlp(h).sum(axis=-1)
+
+    def __call__(self, x: jnp.ndarray, t: jnp.ndarray) -> jnp.ndarray:
+        """Compute symmetric periodic score for each (x, t)."""
+        return self.mlp(x, t)
 
 
 class ScoreSymmetricPeriodicMLP(nn.Module):
@@ -125,18 +166,16 @@ class ScoreSymmetricPeriodicMLP(nn.Module):
     fourier_features_stop: int = 1
 
     def setup(self) -> None:
-        self.mlp = MLP(features=self.features)
-
-    @nn.compact
-    def __call__(self, x: jnp.ndarray, t: jnp.ndarray) -> jnp.ndarray:
-        """Compute symmetric periodic score for each (x, t)."""
-        ff = FourierFeatures(
-            stop=self.fourier_features_stop,
+        self.mlp = _BaseScorePeriodicMLP(
+            features=self.features,
+            fourier_features_stop=self.fourier_features_stop,
             odd=False,
             even=True,
         )
-        h = jnp.concatenate((ff(x), t), axis=-1)
-        return self.mlp(h).sum(axis=-1)
+
+    def __call__(self, x: jnp.ndarray, t: jnp.ndarray) -> jnp.ndarray:
+        """Compute symmetric periodic score for each (x, t)."""
+        return self.mlp(x, t)
 
 
 class FourierFeatures(nn.Module):
