@@ -469,7 +469,7 @@ class FPSL(
 
             # evaluate FP on random points
             fp_loss = 0.0
-            if self.v_alpha > 0.0:
+            if self.v_sigma > 0.0:
                 v1 = self.v_sigma * jax.random.normal(key3, X.shape)
                 v2 = self.v_sigma * jax.random.normal(key4, X.shape)
 
