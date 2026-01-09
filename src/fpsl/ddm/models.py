@@ -568,7 +568,7 @@ class FPSL(
         n_epochs: None | int = None,
         X_val: None | Float[ArrayLike, 'n_val n_features'] = None,
         y_val: None | Float[ArrayLike, ' n_features'] = None,
-        project: str = 'entropy-prod-diffusion',
+        project: str = 'fokker-planck-score-learning',
         wandb_kwargs: dict = {},
     ):
         """Train the FPSL model on the provided dataset.
@@ -659,6 +659,57 @@ class FPSL(
         )
 
         if self.wandb_log:
+            key, _ = jax.random.split(key)
+            xs = [jnp.linspace(0, 1, 100) for _ in range(self.dim)]
+            x_meshs = jnp.meshgrid(*xs, indexing='ij')
+            xts = jnp.column_stack([x.reshape(-1) for x in x_meshs])
+            e_pred = self.energy(xts.reshape(-1, 1), t=0.0)
+
+            # Log the FEL table
+            data = [[*x, y] for (x, y) in zip(xts, e_pred - e_pred.mean())]
+            table = wandb.Table(
+                data=data,
+                columns=[*[f'x{i}' for i in range(self.dim)], 'U'],
+            )
+            wandb.log({'U_pred_table': table})
+
+            # if 2D save 1D FELs
+            if self.dim == 1:
+                wandb.log(
+                    {
+                        'U_pred_x0': wandb.plot.line(
+                            table, 'x0', 'U', title='Free Energy Landscape'
+                        ),
+                    },
+                )
+            elif self.dim == 2:
+                e_pred = e_pred.reshape(*[len(x) for x in x_meshs])
+                p_pred = jnp.nan_to_num(
+                    jnp.exp(-e_pred),
+                    nan=0.0,
+                )
+                for i in range(self.dim):
+                    # degree to integrate out
+                    j = (i + 1) % 2
+                    fel = -jnp.log(
+                        jnp.trapezoid(
+                            p_pred,
+                            axis=j,
+                            dx=xs[j][1] - xs[j][0],
+                        )
+                    )
+                    data = [[x, u] for (x, u) in zip(xs[i], fel)]
+                    table = wandb.Table(data=data, columns=[f'x{i}', 'U'])
+
+                    wandb.log(
+                        {
+                            f'U_pred_x{i}': wandb.plot.line(
+                                table, f'x{i}', 'U', title='Free Energy Landscape'
+                            ),
+                        },
+                    )
+
+        if self.wandb_log:
             wandb.finish()
         return loss_hist
 
@@ -730,32 +781,11 @@ class FPSL(
                 val_loss_hist[idx] = float(val_loss)
             loss_min = loss_hist[: idx + 1].min()
 
-            pbar.set_description(
-                f'loss={total_loss:.4g}/{loss_min:.4g}',
-            )
+            pbar.set_description(f'loss={total_loss:.4g}/{loss_min:.4g}')
+
             if self.wandb_log:
-                # Log the training loss
-                wandb.log(
-                    {'Loss': loss_hist[idx]},
-                    step=idx + 1,
-                )
-
-        if self.wandb_log:
-            key, _ = jax.random.split(key)
-            xs = jnp.linspace(0, 1, 200)
-            e_pred = self.energy(xs.reshape(-1, 1), t=0.0)
-
-            # Log the plot
-            data = [[x, y] for (x, y) in zip(xs, e_pred - e_pred.mean())]
-            table = wandb.Table(data=data, columns=['x', 'U'])
-            wandb.log(
-                {
-                    'U_pred_id': wandb.plot.line(
-                        table, 'x', 'U', title='Free Energy Landscape'
-                    ),
-                },
-                step=idx + 1,
-            )
+                log_vals = {'Loss': loss_hist[idx]}
+                wandb.log(log_vals, step=idx + 1)
 
         # return both train and val loss history
         return {'train_loss': loss_hist, 'val_loss': val_loss_hist}
