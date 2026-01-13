@@ -469,6 +469,7 @@ class FPSL(
 
             # evaluate FP on random points
             fp_loss = 0.0
+
             if self.v_sigma > 0.0:
                 v1 = self.v_sigma * jax.random.normal(key3, X.shape)
                 v2 = self.v_sigma * jax.random.normal(key4, X.shape)
@@ -476,7 +477,7 @@ class FPSL(
                 x_r = jax.random.uniform(key5, x_t.shape)
                 R1 = compute_estimate((x_r + v1) % 1, (x_r - v1) % 1, v1, t)
                 R2 = compute_estimate((x_r + v2) % 1, (x_r - v2) % 1, v2, t)
-                fp_loss = jnp.nan_to_num(
+                fp_loss += jnp.nan_to_num(
                     jnp.mean(R1 * R2) / self.dim**2,
                     nan=0.0,
                     posinf=1e3,
@@ -496,7 +497,7 @@ class FPSL(
                         argnums=1,
                     )
                 )(x_t, t)
-                fp_loss = jnp.mean(dt_energy**2)
+                fp_loss += jnp.mean(dt_energy**2)
 
             delta = jnp.mean((score_times_minus_sigma_pred - eps) ** 2)
 
@@ -555,8 +556,9 @@ class FPSL(
             'box_size': self.box_size,
             'symmetric': self.symmetric,
             'force_schedule': self._force_schedule,
-            'forces': jnp.unique(y).tolist(),
+            'forces': (jnp.min(y), jnp.max(y)),
             'pbc_bins': self.pbc_bins,
+            'v_sigma': self.v_sigma,
         }
 
     def train(
@@ -663,7 +665,8 @@ class FPSL(
             xs = [jnp.linspace(0, 1, 100) for _ in range(self.dim)]
             x_meshs = jnp.meshgrid(*xs, indexing='ij')
             xts = jnp.column_stack([x.reshape(-1) for x in x_meshs])
-            e_pred = self.energy(xts.reshape(-1, 1), t=0.0)
+
+            e_pred = self.energy(xts, t=0.0)
 
             # Log the FEL table
             data = [[*x, y] for (x, y) in zip(xts, e_pred - e_pred.mean())]
