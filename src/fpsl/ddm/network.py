@@ -135,12 +135,12 @@ class ScorePeriodicMLP(nn.Module):
         self.mlp = _BaseScorePeriodicMLP(
             features=self.features,
             fourier_features_stop=self.fourier_features_stop,
-            odd=False,
+            odd=True,
             even=True,
         )
 
     def __call__(self, x: jnp.ndarray, t: jnp.ndarray) -> jnp.ndarray:
-        """Compute symmetric periodic score for each (x, t)."""
+        """Compute periodic score for each (x, t)."""
         return self.mlp(x, t)
 
 
