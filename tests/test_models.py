@@ -384,6 +384,67 @@ class TestFPSLTraining:
         mock_init.assert_called_once()
         mock_finish.assert_called_once()
 
+    def test_train_with_v_sigma_regularization(self):
+        """Training with v_sigma > 0 must use the finite-difference FP estimator
+        and still produce a finite, non-NaN loss history.
+        """
+        key = jax.random.PRNGKey(42)
+        model = FPSL(
+            mlp_network=(8, 8),
+            key=key,
+            n_epochs=5,
+            batch_size=4,
+            wandb_log=False,
+            warmup_steps=1,
+            v_sigma=0.05,
+        )
+
+        X = jax.random.uniform(key, (32, 1))
+        y = jax.random.normal(key, (32, 1))
+        lrs = jnp.array([1e-4, 1e-3])
+
+        # Mock the required methods for training
+        model.prior_x_t = lambda x, t, eps: x + 0.1 * eps * t
+        model.sigma = lambda t: 0.1 + 0.9 * t
+        model.alpha = lambda t: t
+        model.alpha_force = lambda t: t
+
+        loss_hist = model.train(X, y, lrs)
+
+        assert len(loss_hist['train_loss']) == 5
+        assert jnp.all(jnp.isfinite(jnp.asarray(loss_hist['train_loss'])))
+
+    @patch('wandb.init')
+    @patch('wandb.log')
+    @patch('wandb.finish')
+    def test_train_with_wandb_dim2(self, mock_finish, mock_log, mock_init):
+        """W&B free-energy-landscape logging must handle 2D input data."""
+        key = jax.random.PRNGKey(42)
+        model = FPSL(
+            mlp_network=(4, 4),
+            key=key,
+            n_epochs=2,
+            batch_size=4,
+            wandb_log=True,
+            warmup_steps=1,
+        )
+
+        X = jax.random.uniform(key, (16, 2))
+        y = jax.random.normal(key, (16, 2))
+        lrs = jnp.array([1e-4, 1e-3])
+
+        # Mock required methods
+        model.prior_x_t = lambda x, t, eps: x + 0.1 * eps * t
+        model.sigma = lambda t: 0.1 + 0.9 * t
+        model.alpha = lambda t: t
+        model.alpha_force = lambda t: t
+
+        model.train(X, y, lrs)
+
+        assert model.dim == 2
+        mock_init.assert_called_once()
+        mock_finish.assert_called_once()
+
     def test_train_with_validation(self):
         """Test training with validation data."""
         key = jax.random.PRNGKey(42)
