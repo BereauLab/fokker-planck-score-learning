@@ -65,6 +65,9 @@ class FPSL(
         Whether to log training metrics to Weights & Biases.
     gamma_energy_regulariztion : float, default=1e-5
         Regularization coefficient for energy term in the loss function.
+    v_sigma : float, default=0.0
+        If 0 is greater 0, use Fokker-Planck energy regularization with width
+        v_sigma, else regularize norm of energy.
     fourier_features : int, default=1
         Number of Fourier features to use in the network.
     warmup_steps : int, default=5
@@ -144,6 +147,7 @@ class FPSL(
     batch_size: int = 128
     wandb_log: int = False
     gamma_energy_regulariztion: float = 1e-5
+    v_sigma: float = 0.0
     fourier_features: int = 1
     warmup_steps: int = 5
     box_size: float = 1.0
@@ -407,7 +411,7 @@ class FPSL(
             X: Float[ArrayLike, 'n_samples n_features'],
             y: None | Float[ArrayLike, ' n_features'] = None,
         ):
-            key1, key2 = jax.random.split(key)
+            key1, key2, key3, key4, key5 = jax.random.split(key, 5)
             t = jax.random.uniform(key1, (len(X), 1))
             eps = jax.random.normal(key2, X.shape)
             x_t = self.prior_x_t(x=X, t=t, eps=eps)
@@ -417,25 +421,87 @@ class FPSL(
                 in_axes=(None, 0, 0, 0),
             )(params, x_t, t, y)
 
-            dt_energy = jax.vmap(
-                jax.grad(
-                    lambda x, t: -self._energy_eq(
-                        params,
-                        x,
-                        t,
-                    )
-                    / self.sigma(t).mean(),
-                    argnums=1,
+            # estimate Fokker-Planck regularization term
+            def compute_estimate(x_p, x_m, v, t):
+                score_p = (
+                    -1
+                    / self.sigma(t).mean()
+                    * jax.vmap(
+                        self._score,
+                        in_axes=(None, 0, 0, 0),
+                    )(params, x_p, t, y)
                 )
-            )(x_t, t)
+                score_m = (
+                    -1
+                    / self.sigma(t).mean()
+                    * jax.vmap(
+                        self._score,
+                        in_axes=(None, 0, 0, 0),
+                    )(params, x_m, t, y)
+                )
+                dscore = score_p - score_m
 
-            # delta = jnp.abs((score_times_minus_sigma_pred - eps) * self.sigma(t))
-            # delta = ((delta - jnp.round(delta)) / self.sigma(t)) ** 2
-            delta = (score_times_minus_sigma_pred - eps) ** 2
+                dt_lnp = jax.vmap(
+                    jax.grad(
+                        lambda x, t: (
+                            self._energy_eq(
+                                params,
+                                x,
+                                t,
+                            )
+                            / self.sigma(t).mean()
+                        ),
+                        argnums=1,
+                    )
+                )(x_p, t)
 
-            return jnp.mean(
-                delta,
-            ) + self.gamma_energy_regulariztion * (jnp.mean(dt_energy**2))
+                g_pow = self.beta(t).mean()
+                R = g_pow * (v / self.v_sigma) * dscore / (2 * self.v_sigma)
+                R = jnp.sum(R, axis=1)
+
+                return (
+                    R
+                    + (
+                        g_pow * jnp.linalg.norm(score_p, 2, axis=1)[:, None] ** 2
+                        - dt_lnp
+                    )[:, 0]
+                )
+
+            # evaluate FP on random points
+            fp_loss = 0.0
+
+            if self.v_sigma > 0.0:
+                v1 = self.v_sigma * jax.random.normal(key3, X.shape)
+                v2 = self.v_sigma * jax.random.normal(key4, X.shape)
+
+                x_r = jax.random.uniform(key5, x_t.shape)
+                R1 = compute_estimate((x_r + v1) % 1, (x_r - v1) % 1, v1, t)
+                R2 = compute_estimate((x_r + v2) % 1, (x_r - v2) % 1, v2, t)
+                fp_loss += jnp.nan_to_num(
+                    jnp.mean(R1 * R2) / self.dim**2,
+                    nan=0.0,
+                    posinf=1e3,
+                    neginf=-1e3,
+                )
+            else:
+                dt_energy = jax.vmap(
+                    jax.grad(
+                        lambda x, t: (
+                            -self._energy_eq(
+                                params,
+                                x,
+                                t,
+                            )
+                            / self.sigma(t).mean()
+                        ),
+                        argnums=1,
+                    )
+                )(x_t, t)
+                fp_loss += jnp.mean(dt_energy**2)
+
+            delta = jnp.mean((score_times_minus_sigma_pred - eps) ** 2)
+
+            return delta + self.gamma_energy_regulariztion * fp_loss
 
         return loss_fn
 
@@ -490,8 +556,9 @@ class FPSL(
             'box_size': self.box_size,
             'symmetric': self.symmetric,
             'force_schedule': self._force_schedule,
-            'forces': jnp.unique(y).tolist(),
+            'forces': (jnp.min(y), jnp.max(y)),
             'pbc_bins': self.pbc_bins,
+            'v_sigma': self.v_sigma,
         }
 
     def train(
@@ -503,7 +570,7 @@ class FPSL(
         n_epochs: None | int = None,
         X_val: None | Float[ArrayLike, 'n_val n_features'] = None,
         y_val: None | Float[ArrayLike, ' n_features'] = None,
-        project: str = 'entropy-prod-diffusion',
+        project: str = 'fokker-planck-score-learning',
         wandb_kwargs: dict = {},
     ):
         """Train the FPSL model on the provided dataset.
@@ -594,6 +661,58 @@ class FPSL(
         )
 
         if self.wandb_log:
+            key, _ = jax.random.split(key)
+            xs = [jnp.linspace(0, 1, 100) for _ in range(self.dim)]
+            x_meshs = jnp.meshgrid(*xs, indexing='ij')
+            xts = jnp.column_stack([x.reshape(-1) for x in x_meshs])
+
+            e_pred = self.energy(xts, t=0.0)
+
+            # Log the FEL table
+            data = [[*x, y] for (x, y) in zip(xts, e_pred - e_pred.mean())]
+            table = wandb.Table(
+                data=data,
+                columns=[*[f'x{i}' for i in range(self.dim)], 'U'],
+            )
+            wandb.log({'U_pred_table': table})
+
+            # if 2D save 1D FELs
+            if self.dim == 1:
+                wandb.log(
+                    {
+                        'U_pred_x0': wandb.plot.line(
+                            table, 'x0', 'U', title='Free Energy Landscape'
+                        ),
+                    },
+                )
+            elif self.dim == 2:
+                e_pred = e_pred.reshape(*[len(x) for x in x_meshs])
+                p_pred = jnp.nan_to_num(
+                    jnp.exp(-e_pred),
+                    nan=0.0,
+                )
+                for i in range(self.dim):
+                    # degree to integrate out
+                    j = (i + 1) % 2
+                    fel = -jnp.log(
+                        jnp.trapezoid(
+                            p_pred,
+                            axis=j,
+                            dx=xs[j][1] - xs[j][0],
+                        )
+                    )
+                    data = [[x, u] for (x, u) in zip(xs[i], fel)]
+                    table = wandb.Table(data=data, columns=[f'x{i}', 'U'])
+
+                    wandb.log(
+                        {
+                            f'U_pred_x{i}': wandb.plot.line(
+                                table, f'x{i}', 'U', title='Free Energy Landscape'
+                            ),
+                        },
+                    )
+
+        if self.wandb_log:
             wandb.finish()
         return loss_hist
 
@@ -665,32 +784,11 @@ class FPSL(
                 val_loss_hist[idx] = float(val_loss)
             loss_min = loss_hist[: idx + 1].min()
 
-            pbar.set_description(
-                f'loss={total_loss:.4g}/{loss_min:.4g}',
-            )
+            pbar.set_description(f'loss={total_loss:.4g}/{loss_min:.4g}')
+
             if self.wandb_log:
-                # Log the training loss
-                wandb.log(
-                    {'Loss': loss_hist[idx]},
-                    step=idx + 1,
-                )
-
-        if self.wandb_log:
-            key, _ = jax.random.split(key)
-            xs = jnp.linspace(0, 1, 200)
-            e_pred = self.energy(xs.reshape(-1, 1), t=0.0)
-
-            # Log the plot
-            data = [[x, y] for (x, y) in zip(xs, e_pred - e_pred.mean())]
-            table = wandb.Table(data=data, columns=['x', 'U'])
-            wandb.log(
-                {
-                    'U_pred_id': wandb.plot.line(
-                        table, 'x', 'U', title='Free Energy Landscape'
-                    ),
-                },
-                step=idx + 1,
-            )
+                log_vals = {'Loss': loss_hist[idx]}
+                wandb.log(log_vals, step=idx + 1)
 
         # return both train and val loss history
         return {'train_loss': loss_hist, 'val_loss': val_loss_hist}

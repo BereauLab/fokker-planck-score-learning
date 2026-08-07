@@ -66,8 +66,6 @@ def load_gromacs_pullx(pullx_file, gro_file, stride=1, nrows_max=None):
     if not np.allclose(t, tf):
         raise ValueError(f'Time vectors of {pullx_file} and {pullf_file} do not match.')
 
-    t, traj = np.loadtxt(pullx_file, skiprows=17, max_rows=nrows_max).T
-
     # stride
     traj = traj[::stride]
     dt = t[stride] * 1e-3  # convert to ns

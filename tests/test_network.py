@@ -10,6 +10,7 @@ from fpsl.ddm.network import (
     ScorePeriodicMLP,
     ScoreSymmetricPeriodicMLP,
     FourierFeatures,
+    _BaseScorePeriodicMLP,
 )
 
 
@@ -87,3 +88,55 @@ def test_score_periodic_symmetric(mlp):
     out_p_neg = periodic.apply(p_params, -x, t)
     # check that output is zero
     assert jnp.allclose(out_p, out_p_neg)
+
+
+def test_base_score_periodic_mlp_odd_even_are_independently_configurable():
+    """`_BaseScorePeriodicMLP` must honor its own odd/even flags (not hardcode them)."""
+    key = jax.random.PRNGKey(3)
+    x = jnp.full((1,), 0.1)
+    t = jnp.zeros((1,))
+
+    cosine_only = _BaseScorePeriodicMLP(
+        features=[4], fourier_features_stop=2, odd=False, even=True
+    )
+    sine_and_cosine = _BaseScorePeriodicMLP(
+        features=[4], fourier_features_stop=2, odd=True, even=True
+    )
+
+    cosine_only_params = cosine_only.init(key, x, t)
+    sine_and_cosine_params = sine_and_cosine.init(key, x, t)
+
+    # the sine-inclusive network embeds a wider Fourier feature vector (it adds
+    # `n_freqs` sine terms on top of the `n_freqs` cosine terms + 1 for `t`),
+    # so its first Dense layer must have a correspondingly larger kernel
+    n_freqs = 2  # fourier_features_stop=2, start=1, step=1
+    cosine_only_kernel = cosine_only_params['params']['mlp']['Dense_0']['kernel']
+    sine_and_cosine_kernel = sine_and_cosine_params['params']['mlp']['Dense_0'][
+        'kernel'
+    ]
+    assert cosine_only_kernel.shape[0] == n_freqs + 1
+    assert sine_and_cosine_kernel.shape[0] == cosine_only_kernel.shape[0] + n_freqs
+
+
+def test_score_periodic_mlp_is_not_cosine_only():
+    """ScorePeriodicMLP must retain sine terms (odd=True), unlike the symmetric variant."""
+    key = jax.random.PRNGKey(4)
+    x = jnp.full((1,), 0.1)
+    t = jnp.zeros((1,))
+
+    periodic = ScorePeriodicMLP(features=[4], fourier_features_stop=2)
+    symmetric = ScoreSymmetricPeriodicMLP(features=[4], fourier_features_stop=2)
+
+    periodic_params = periodic.init(key, x, t)
+    symmetric_params = symmetric.init(key, x, t)
+
+    # a network with sine terms is not, in general, invariant to x -> 1 - x
+    # (which flips the sign of sin(2*pi*n*x) while leaving cos(2*pi*n*x) fixed)
+    out_periodic = periodic.apply(periodic_params, x, t)
+    out_periodic_reflected = periodic.apply(periodic_params, 1 - x, t)
+    assert not jnp.allclose(out_periodic, out_periodic_reflected)
+
+    # the cosine-only network *is* invariant under that reflection
+    out_symmetric = symmetric.apply(symmetric_params, x, t)
+    out_symmetric_reflected = symmetric.apply(symmetric_params, 1 - x, t)
+    assert jnp.allclose(out_symmetric, out_symmetric_reflected)
